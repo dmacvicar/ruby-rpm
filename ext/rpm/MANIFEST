@@ -1,0 +1,13 @@
+MANIFEST
+db.c
+dependency.c
+extconf.rb
+file.c
+package.c
+private.h
+rpm.c
+ruby-rpm.h
+source.c
+spec.c
+version.c
+rpm40_compat.c

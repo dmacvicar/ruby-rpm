@@ -1,0 +1,38 @@
+Ruby/RPM README
+===============
+
+  Ruby/RPM is an interface to access RPM database for Ruby.
+  
+Requirements
+------------
+
+  * ruby 1.6
+  * gcc
+  * rpm 4.0.0 or newer (tested on 4.0.4 and 4.2.1)
+
+Install
+-------
+
+  De-Compress archive and enter its top directory.
+  Then type:
+  
+    $ ruby install.rb config
+    $ ruby install.rb setup
+    $ su
+    # ruby setup.rb install
+    
+  You can also install files into your favorite directory
+  by supplying install.rb some options. Try "ruby setup.rb --help".
+  
+Usage
+-----
+
+  require 'rpm'
+  
+License
+-------
+
+  See COPYING file.
+
+
+Kenta MURATA <muraken@kondara.org>

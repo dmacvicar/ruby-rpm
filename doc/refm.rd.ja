@@ -1,0 +1,913 @@
+### -*- RD -*-
+=begin
+
+= Ruby/RPM Reference Manual
+
+        version 1.0.0
+        Copyright (C) 2002 Kenta MURATA <muraken@kondara.org>.
+
+== 目次
+
+* ((<RPM>))
+* ((<RPM::Version>))
+* ((<RPM::Source>))
+* ((<RPM::Patch>))
+* ((<RPM::Icon>))
+* ((<RPM::File>))
+* ((<RPM::Dependency>))
+* ((<RPM::Provide>))
+* ((<RPM::Require>))
+* ((<RPM::Conflict>))
+* ((<RPM::Obsolete>))
+* ((<RPM::Package>))
+* ((<RPM::ChangeLog>))
+* ((<RPM::Spec>))
+* ((<RPM::DB>))
+* ((<RPM::Transaction>))
+* ((<RPM::CallbackData>))
+* ((<RPM::Problem>))
+
+== RPM
+
+=== 定数
+
+--- RPM::VERSION
+
+    この拡張モジュールのバージョン。
+
+--- RPM::LOG_EMERG
+--- RPM::LOG_ALERT
+--- RPM::LOG_CRIT
+--- RPM::LOG_ERR
+--- RPM::LOG_WARNING
+--- RPM::LOG_NOTICE
+--- RPM::LOG_INFO
+--- RPM::LOG_DEBUG
+--- RPM::MESS_DEBUG
+--- RPM::MESS_VERBOSE
+--- RPM::MESS_NORMAL
+--- RPM::MESS_WARNING
+--- RPM::MESS_ERROR
+--- RPM::MESS_FATALERROR
+--- RPM::MESS_QUIET
+
+    ((<RPM.verbosity=>)) で指定する、メッセージの冗長度。デフォル
+    トは RPM::LOG_EMERG になっている。
+
+--- RPM::DBI_PACKAGES
+--- RPM::DBI_DEPENDS
+--- RPM::DBI_LABEL
+--- RPM::DBI_ADDED
+--- RPM::DBI_REMOVE
+--- RPM::DBI_AVAILABLE
+--- RPM::TAG_HEADERIMAGE
+--- RPM::TAG_HEADERSIGNATURES
+--- RPM::TAG_HEADERIMMUTABLE
+--- RPM::TAG_HEADERREGIONS
+--- RPM::TAG_HEADERI18NTABLE
+--- RPM::TAG_SIGSIZE
+--- RPM::TAG_SIGPGP
+--- RPM::TAG_SIGMD5
+--- RPM::TAG_SIGGPG
+--- RPM::TAG_SHA1HEADER
+--- RPM::TAG_NAME
+--- RPM::TAG_VERSION
+--- RPM::TAG_RELEASE
+--- RPM::TAG_EPOCH
+--- RPM::TAG_SUMMARY
+--- RPM::TAG_DESCRIPTION
+--- RPM::TAG_BUILDTIME
+--- RPM::TAG_BUILDHOST
+--- RPM::TAG_INSTALLTIME
+--- RPM::TAG_SIZE
+--- RPM::TAG_DISTRIBUTION
+--- RPM::TAG_VENDOR
+--- RPM::TAG_GIF
+--- RPM::TAG_XPM
+--- RPM::TAG_LICENSE
+--- RPM::TAG_PACKAGER
+--- RPM::TAG_GROUP
+--- RPM::TAG_SOURCE
+--- RPM::TAG_PATCH
+--- RPM::TAG_URL
+--- RPM::TAG_OS
+--- RPM::TAG_ARCH
+--- RPM::TAG_PREIN
+--- RPM::TAG_POSTIN
+--- RPM::TAG_PREUN
+--- RPM::TAG_POSTUN
+--- RPM::TAG_FILESIZES
+--- RPM::TAG_FILESTATES
+--- RPM::TAG_FILEMODES
+--- RPM::TAG_FILERDEVS
+--- RPM::TAG_FILEMTIMES
+--- RPM::TAG_FILEMD5S
+--- RPM::TAG_FILELINKTOS
+--- RPM::TAG_FILEFLAGS
+--- RPM::TAG_FILEUSERNAME
+--- RPM::TAG_FILEGROUPNAME
+--- RPM::TAG_ICON
+--- RPM::TAG_SOURCERPM
+--- RPM::TAG_FILEVERIFYFLAGS
+--- RPM::TAG_ARCHIVESIZE
+--- RPM::TAG_PROVIDENAME
+--- RPM::TAG_REQUIREFLAGS
+--- RPM::TAG_REQUIRENAME
+--- RPM::TAG_REQUIREVERSION
+--- RPM::TAG_CONFLICTFLAGS
+--- RPM::TAG_CONFLICTNAME
+--- RPM::TAG_CONFLICTVERSION
+--- RPM::TAG_EXCLUDEARCH
+--- RPM::TAG_EXCLUDEOS
+--- RPM::TAG_EXCLUSIVEARCH
+--- RPM::TAG_EXCLUSIVEOS
+--- RPM::TAG_RPMVERSION
+--- RPM::TAG_TRIGGERSCRIPTS
+--- RPM::TAG_TRIGGERNAME
+--- RPM::TAG_TRIGGERVERSION
+--- RPM::TAG_TRIGGERFLAGS
+--- RPM::TAG_TRIGGERINDEX
+--- RPM::TAG_VERIFYSCRIPT
+--- RPM::TAG_CHANGELOGTIME
+--- RPM::TAG_CHANGELOGNAME
+--- RPM::TAG_CHANGELOGTEXT
+--- RPM::TAG_PREINPROG
+--- RPM::TAG_POSTINPROG
+--- RPM::TAG_PREUNPROG
+--- RPM::TAG_POSTUNPROG
+--- RPM::TAG_BUILDARCHS
+--- RPM::TAG_OBSOLETENAME
+--- RPM::TAG_VERIFYSCRIPTPROG
+--- RPM::TAG_TRIGGERSCRIPTPROG
+--- RPM::TAG_COOKIE
+--- RPM::TAG_FILEDEVICES
+--- RPM::TAG_FILEINODES
+--- RPM::TAG_FILELANGS
+--- RPM::TAG_PREFIXES
+--- RPM::TAG_INSTPREFIXES
+--- RPM::TAG_PROVIDEFLAGS
+--- RPM::TAG_PROVIDEVERSION
+--- RPM::TAG_OBSOLETEFLAGS
+--- RPM::TAG_OBSOLETEVERSION
+--- RPM::TAG_DIRINDEXES
+--- RPM::TAG_BASENAMES
+--- RPM::TAG_DIRNAMES
+--- RPM::TAG_OPTFLAGS
+--- RPM::TAG_PAYLOADFORMAT
+--- RPM::TAG_PAYLOADCOMPRESSOR
+--- RPM::TAG_PAYLOADFLAGS
+--- RPM::TAG_MULTILIBS
+--- RPM::TAG_INSTALLTID
+--- RPM::TAG_REMOVETID
+--- RPM::TAG_RHNPLATFORM
+--- RPM::TAG_PLATFORM
+
+    タグ。
+
+--- RPM::FILE_STATE_NORMAL
+--- RPM::FILE_STATE_REPLACED
+--- RPM::FILE_STATE_NOTINSTALLED
+--- RPM::FILE_STATE_NETSHARED
+
+    インストール済みファイルの状態。
+
+--- RPM::FILE_NONE
+--- RPM::FILE_CONFIG
+--- RPM::FILE_DOC
+--- RPM::FILE_DONOTUSE
+--- RPM::FILE_MISSINGOK
+--- RPM::FILE_SPECFILE
+--- RPM::FILE_GHOST
+--- RPM::FILE_LICENSE
+--- RPM::FILE_README
+--- RPM::FILE_EXCLUDE
+--- RPM::FILE_MULTILIB_SHIFT
+--- RPM::FILE_MULTILIB_MASK
+--- RPM::FILE_ALL
+
+    パッケージに含まれるファイルのフラグ。
+
+--- RPM::SENSE_ANY
+--- RPM::SENSE_SERIAL
+--- RPM::SENSE_LESS
+--- RPM::SENSE_GREATER
+--- RPM::SENSE_EQUAL
+--- RPM::SENSE_PROVIDES
+--- RPM::SENSE_CONFLICTS
+--- RPM::SENSE_PREREQ
+--- RPM::SENSE_OBSOLETES
+--- RPM::SENSE_INTERP
+--- RPM::SENSE_SCRIPT_PRE
+--- RPM::SENSE_SCRIPT_POST
+--- RPM::SENSE_SCRIPT_PREUN
+--- RPM::SENSE_SCRIPT_POSTUN
+--- RPM::SENSE_SCRIPT_VERIFY
+--- RPM::SENSE_FIND_REQUIRES
+--- RPM::SENSE_FIND_PROVIDES
+--- RPM::SENSE_TRIGGERIN
+--- RPM::SENSE_TRIGGERUN
+--- RPM::SENSE_TRIGGERPOSTUN
+--- RPM::SENSE_MULTILIB
+--- RPM::SENSE_SCRIPT_PREP
+--- RPM::SENSE_SCRIPT_BUILD
+--- RPM::SENSE_SCRIPT_INSTALL
+--- RPM::SENSE_SCRIPT_CLEAN
+--- RPM::SENSE_RPMLIB
+--- RPM::SENSE_TRIGGERPREIN
+--- RPM::SENSE_KEYRING
+--- RPM::SENSE_TRIGGER
+
+    ((<RPM::Dependency>)) 等の意味を示す定数。
+
+--- RPM::PROB_BADARCH
+--- RPM::PROB_BADOS
+--- RPM::PROB_PKG_INSTALLED
+--- RPM::PROB_BADRELOCATE
+--- RPM::PROB_REQUIRES
+--- RPM::PROB_CONFLICT
+--- RPM::PROB_NEW_FILE_CONFLICT
+--- RPM::PROB_FILE_CONFLICT
+--- RPM::PROB_OLDPACKAGE
+--- RPM::PROB_DISKSPACE
+--- RPM::PROB_DISKNODES
+--- RPM::PROB_BADPRETRANS
+
+    ((<RPM::Problem>)) の種類を表す定数。
+
+--- RPM::CALLBACK_INST_PROGRESS
+--- RPM::CALLBACK_INST_START
+--- RPM::CALLBACK_INST_OPEN_FILE
+--- RPM::CALLBACK_INST_CLOSE_FILE
+--- RPM::CALLBACK_TRANS_PROGRESS
+--- RPM::CALLBACK_TRANS_START
+--- RPM::CALLBACK_TRANS_STOP
+--- RPM::CALLBACK_UNINST_PROGRESS
+--- RPM::CALLBACK_UNINST_START
+--- RPM::CALLBACK_UNINST_STOP
+
+    ((<RPM::CallbackData>)) の種類を表わす定数。
+
+--- RPM::TRANS_FLAG_NONE
+--- RPM::TRANS_FLAG_TEST
+--- RPM::TRANS_FLAG_BUILD_PROBS
+--- RPM::TRANS_FLAG_NOSCRIPTS
+--- RPM::TRANS_FLAG_JUSTDB
+--- RPM::TRANS_FLAG_NOTRIGGERS
+--- RPM::TRANS_FLAG_NODOCS
+--- RPM::TRANS_FLAG_ALLFILES
+--- RPM::TRANS_FLAG_KEEPOBSOLETE
+--- RPM::TRANS_FLAG_MULTILIB
+--- RPM::TRANS_FLAG_DIRSTASH
+--- RPM::TRANS_FLAG_REPACKAGE
+--- RPM::TRANS_FLAG_PKGCOMMIT
+--- RPM::TRANS_FLAG_PKGUNDO
+--- RPM::TRANS_FLAG_COMMIT
+--- RPM::TRANS_FLAG_UNDO
+--- RPM::TRANS_FLAG_REVERSE
+--- RPM::TRANS_FLAG_NOTRIGGERPREIN
+--- RPM::TRANS_FLAG_NOPRE
+--- RPM::TRANS_FLAG_NOPOST
+--- RPM::TRANS_FLAG_NOTRIGGERIN
+--- RPM::TRANS_FLAG_NOTRIGGERUN
+--- RPM::TRANS_FLAG_NOPREUN
+--- RPM::TRANS_FLAG_NOPOSTUN
+--- RPM::TRANS_FLAG_NOTRIGGERPOSTUN
+--- RPM::TRANS_FLAG_NOPAYLOAD
+--- RPM::TRANS_FLAG_APPLYONLY
+--- RPM::TRANS_FLAG_CHAINSAW
+--- RPM::TRANS_FLAG_NOMD5
+
+    ((<RPM::Transaction#commit>)) の第1引数に渡すトランザクション処理
+    のオプション定数。
+
+--- RPM::PROB_FILTER_NONE
+--- RPM::PROB_FILTER_IGNOREOS
+--- RPM::PROB_FILTER_IGNOREARCH
+--- RPM::PROB_FILTER_REPLACEPKG
+--- RPM::PROB_FILTER_FORCERELOCATE
+--- RPM::PROB_FILTER_REPLACENEWFILES
+--- RPM::PROB_FILTER_REPLACEOLDFILES
+--- RPM::PROB_FILTER_OLDPACKAGE
+--- RPM::PROB_FILTER_DISKSPACE
+--- RPM::PROB_FILTER_DISKNODES
+--- RPM::PROB_FILTER_FORCE
+--- RPM::PROB_FILTER_REPLACEFILES
+--- RPM::PROB_FILTER_IGNORESIZE
+
+    ((<RPM::Transaction#commit>)) の第2引数で指定する問題フィルタ用定
+    数。
+
+=== モジュール関数
+
+--- RPM.[](name)
+
+    マクロを参照する。
+
+--- RPM.[]=(name, value)
+
+    マクロを設定する。((|value|)) が (({nil})) の場合はマクロを削除する。
+
+--- RPM.readrc(path, ...)
+
+    設定ファイルを読む。
+
+--- RPM.verbosity
+--- RPM.verbosity=(level)
+
+    rpm が出力するメッセージのレベルを得る、または設定する。
+
+== RPM::Version
+
+=== スーパクラス
+
+  * Object
+
+=== Mix-in
+
+  * Comparable
+
+=== 特異メソッド
+
+--- RPM::Version.new(vr, e=nil)
+--- RPM::Version.new(v, r, e=nil)
+
+    Version オブジェクトを生成する。((|v|)) はバージョン、((|r|)) はリ
+    リース、((|e|)) は Epoch となる。((|vr|)) は (({"ver[-rel]"})) の
+    形式の文字列。
+
+    例:
+
+        RPM::Version.new "1.0.0-3"
+        RPM::Version.new "1.04"
+        RPM::Version.new "1.0.0-3k", 1
+        RPM::Version.new "2.0.3", "5k"
+
+=== メソッド
+
+--- RPM::Version#<=>(ver)
+
+    バージョンとリリースを ((|ver|)) と比較した結果を返す。
+
+--- RPM::Version#newer?(ver)
+
+    バージョン、リリース、Epoch を比較して自分が新しい場合に (({true})) を返す。
+
+--- RPM::Version#older?(ver)
+
+    バージョン、リリース、Epoch を比較して自分が古い場合に (({true})) を返す。
+
+--- RPM::Version#v
+--- RPM::Version#r
+--- RPM::Version#e
+
+    それぞれバージョン、リリース、Epoch の値を返す。
+
+--- RPM::Version#to_s
+
+    (({"ver-rel"})) という形式の文字列を返す。
+
+--- RPM::Version#to_vre
+
+    (({"epoch:ver-rel"})) という形式の文字列を返す。
+
+
+== RPM::Source
+
+=== スーパクラス
+
+  * Object
+
+=== 特異メソッド
+
+--- RPM::Source.new(url, num, nosource=false)
+
+    Source オブジェクトを生成する。((|url|)) は URL、((|num|)) はソース
+    の番号、((|nosource|)) は NoSource の時 true。
+
+    例:
+
+        RPM::Source.new( 'http://example.com/hoge/hoge.tar.bz2', 0 )
+        RPM::Source.new( 'http://example.com/fuga/fuga.tar.gz', 1, true )
+
+=== メソッド
+
+--- RPM::Source#fullname
+--- RPM::Source#to_s
+
+    ソースの URL またはファイル名を返す。
+
+--- RPM::Source#filename
+
+    ソースのファイル名を返す。
+
+--- RPM::Source#num
+
+    ソースの番号を返す。
+
+--- RPM::Source#no?
+
+    NoSource 指定されている場合に (({true})) を返す。
+
+== RPM::Patch
+
+=== スーパクラス
+
+  * ((<RPM::Source>))
+
+== RPM::Icon
+
+=== スーパクラス
+
+  * ((<RPM::Source>))
+
+== RPM::File
+
+=== スーパクラス
+
+  * Object
+
+=== メソッド
+
+--- RPM::File#path
+--- RPM::File#to_s
+
+    パスを返す。
+
+--- RPM::File#md5sum
+
+    MD5 ダイジェスト文字列を返す。
+
+--- RPM::File#link_to
+
+    ファイルがシンボリックリンンクの場合にリンク先のパスを返す。
+    このパスは相対パスの場合もある。相対パスから絶対パスに変換するには、
+
+        File.expand_path(file.link_to, File.dirname(file.path))
+
+    とする。
+
+--- RPM::File#symlink?
+
+    ファイルがシンボリックリンクの場合に (({true})) を返す。
+
+--- RPM::File#size
+
+    ファイルのサイズを返す。
+
+--- RPM::File#mtime
+
+    ファイルの最終変更時刻を Time オブジェクトで返す。
+
+--- RPM::File#owner
+
+    ファイルを所有するユーザ名。(({nil})) が返ることもある。
+
+--- RPM::File#uid
+
+    ファイルを所有するユーザの uid を返す。
+
+--- RPM::File#group
+
+    ファイルを所有するグループ名。(({nil})) が返ることもある。
+
+--- RPM::File#gid
+
+    ファイルを所有するユーザの gid を返す。
+
+--- RPM::File#rdev
+
+    ファイルのデバイスタイプを返す。
+
+--- RPM::File#mode
+
+    ファイルのパーミッションを返す。
+
+--- RPM::File#attr
+
+    ファイルの属性を返す。
+
+--- RPM::File#state
+
+    ファイルの状態を返す。
+
+--- RPM::File#config?
+
+    ファイルが %config 指定されている場合に (({true})) を返す。
+
+--- RPM::File#doc?
+
+    ファイルが %doc 指定されている場合に (({true})) を返す。
+
+--- RPM::File#donotuse?
+
+    ファイルが %donotuse 指定されている場合に (({true})) を返す。
+
+--- RPM::File#missingok?
+
+    ファイルが %config(missingok) 指定されている場合に (({true})) を返す。
+
+--- RPM::File#noreplace?
+
+    ファイルが %config(noreplace) 指定されている場合に (({true})) を返す。
+
+--- RPM::File#specfile?
+
+    ファイルが spec ファイルである場合に (({true})) を返す。
+
+--- RPM::File#ghost?
+
+    ファイルが %ghost 指定されている場合に (({true})) を返す。
+
+--- RPM::File#license?
+
+    ファイルが %license 指定されている場合に (({true})) を返す。
+
+--- RPM::File#readme?
+
+    ファイルが %readme 指定されている場合に (({true})) を返す。
+
+--- RPM::File#exclude?
+
+    ファイルが %exclude 指定されている場合に (({true})) を返す。
+
+--- RPM::File#replaced?
+
+    ファイルが置き換えられてインストールされた場合に (({true})) を返す。
+
+--- RPM::File#notinstalled?
+
+    ファイルがインストールされていない場合に (({true})) を返す。
+
+--- RPM::File#netshared?
+
+    ファイルがネットワーク経由で共有されている場合に (({true})) を返す。
+
+== RPM::Dependency
+
+=== スーパクラス
+
+  * Object
+
+=== メソッド
+
+--- RPM::Dependency#name
+
+    依存パッケージ名を返す。
+
+--- RPM::Dependency#version
+
+    依存パッケージのバージョンを返す。
+
+--- RPM::Dependency#flags
+
+    依存フラグを返す。
+
+--- RPM::Dependency#target
+
+    依存しているオブジェクト (((<Package|RPM::Package>)) や
+    ((<Spec|RPM::Spec>)) 等) を返す。
+
+--- RPM::Dependency#lt?
+
+    バージョンの比較が (({<})) または (({<=})) である場合に (({true})) を返す。
+
+--- RPM::Dependency#gt?
+
+    バージョンの比較が (({>})) または (({>=})) である場合に (({true})) を返す。
+
+--- RPM::Dependency#eq?
+
+    バージョンの比較が (({<=})) または (({>=})) もしくは (({==})) である場合に (({true})) を返す。
+
+--- RPM::Dependency#le?
+
+    バージョンの比較が (({<=})) である場合に (({true})) を返す。
+
+--- RPM::Dependency#ge?
+
+    バージョンの比較が (({>=})) である場合に (({true})) を返す。
+
+--- RPM::Dependency#satisfy?(ver)
+
+    ((|ver|)) がこの Dependency を満たす場合に (({true})) を返す。
+
+== RPM::Provide
+
+=== スーパクラス
+
+  * ((<RPM::Dependency>))
+
+== RPM::Require
+
+=== スーパクラス
+
+  * ((<RPM::Dependency>))
+
+=== メソッド
+
+--- RPM::Require#pre?
+
+    PreReq の依存関係である場合に (({true})) を返す。
+
+== RPM::Conflict
+
+=== スーパクラス
+
+  * ((<RPM::Dependency>))
+
+== RPM::Obsolete
+
+=== スーパクラス
+
+  * ((<RPM::Dependency>))
+
+== RPM::Package
+
+=== スーパクラス
+
+  * Data
+
+=== 特異メソッド
+
+--- RPM::Package.open(filename)
+--- RPM::Package.new(filename)
+
+    ファイル ((|filename|)) からパッケージオブジェクトを作成する。
+
+=== メソッド
+
+--- RPM::Package#[](tag)
+
+    パッケージのタグで連想される値を返す。
+
+--- RPM::Package#name
+
+    パッケージ名を返す。
+
+--- RPM::Package#version
+
+    パッケージのバージョン (((<Version|RPM::Version>))) を返す。
+
+--- RPM::Package#files
+
+    パッケージに含まれるファイル (((<File|RPM::File>))) の配列を返す。
+
+--- RPM::Package#provides
+
+    パッケージの Provides の配列を返す。
+
+--- RPM::Package#requires
+
+    パッケージの Requires の配列を返す。
+
+--- RPM::Package#conflicts
+
+    パッケージの Conflicts の配列を返す。
+
+--- RPM::Package#changelog
+
+    パッケージの更新履歴の配列を返す。更新履歴は、(({:time}))、
+    (({:name}))、(({:text})) の3つのキーを持ったハッシュである。
+
+--- RPM::Package#to_s
+
+    (({"name-version-release"})) という文字列を返す。
+
+== RPM::ChangeLog
+
+=== スーパクラス
+
+  * Struct
+
+=== メソッド
+
+--- RPM::ChangeLog#time
+--- RPM::ChangeLog#name
+--- RPM::ChangeLog#text
+
+== RPM::Spec
+
+=== スーパクラス
+
+  * Data
+
+=== 特異メソッド
+
+--- RPM::Spec.open(filename)
+--- RPM::Spec.new(filename)
+
+    ((|filename|)) で指定された spec ファイルから Spec オブジェクトを生成する。
+
+=== メソッド
+
+--- RPM::Spec#buildroot
+
+    BuildRoot を返す。
+
+--- RPM::Spec#buildsubdir
+
+    BuildRoot 内に作成されるディレクトリ名を返す。
+
+--- RPM::Spec#buildarchs
+
+    Build 対象のアーキテクチャ名の配列を返す (特に指定のない場合は nil)。
+
+--- RPM::Spec#buildprereq
+
+    BuildPreReq の配列を返す。
+
+--- RPM::Spec#buildrequires
+
+    BuildRequires の配列を返す。
+
+--- RPM::Spec#buildconflicts
+
+    BuildConflicts の配列を返す。
+
+--- RPM::Spec#sources
+
+    ソースファイル (((<Source|RPM::Source>)),
+    ((<Patch|RPM::Patch>)), ((<Icon|RPM::Icon>))) の配列を返す。
+
+--- RPM::Spec#packages
+
+    Spec をビルドして作られるパッケージ (((<Package|RPM::Package>))) の配列を返す。
+    この Package オブジェクトは不完全である (例えば、
+    ((<Package#files|RPM::Package#files>)) メソッドが (({nil})) を返す)。
+
+== RPM::DB
+
+=== スーパクラス
+
+  * Data
+
+=== Mix-in
+
+  * Enumerable
+
+=== 特異メソッド
+
+--- RPM::DB.open(writable=false, root='')
+--- RPM::DB.new(writable=false, root='')
+
+    パッケージデータベースを開く。((|writable|)) が (({false})) の場合、
+    トランザクション処理はできない (see ((<RPM::DB#transaction>)))。
+    ((|writable|)) が (({false})) の場合、生成されるオブジェクトは 
+    (({freeze})) されたものとなる。
+
+    データベースは (({"#{root}/var/lib/rpm"})) に存在していなければな
+    らない。
+
+--- RPM::DB.init(root, writable=false)
+
+    パッケージデータベースを初期化する。
+
+    データベースは (({"#{root}/var/lib/rpm"})) に作成される。
+
+--- RPM::DB.rebuild(root='')
+
+    パッケージデータベースを再構築する。
+
+    データベースは (({"#{root}/var/lib/rpm"})) に存在していなければな
+    らない。
+
+=== メソッド
+
+--- RPM::DB#root
+
+    ルートディレクトリを返す。
+
+--- RPM::DB#home
+
+    データベースのホームディレクトリを返す。
+
+--- RPM::DB#writable?
+
+    データベースが書き込み可能な場合に (({true})) を返す。
+
+--- RPM::DB#each {|pkg| ... }
+
+    データベースに含まれる各パッケージについてブロックを評価する。
+
+--- RPM::DB#each_match(tag, val) {|pkg| ... }
+
+    データベースに含まれるタグ ((|tag|)) の値が ((|val|)) に一致する各
+    パッケージについてブロックを評価する。
+
+--- RPM::DB#transaction(root=nil) {|ts| ... }
+
+    トランザクション処理に入る。(({freeze})) されたデータベースはトラ
+    ンザクション処理できない。トランザクション処理が正常に終了した場合
+    は (({true})) を返す。ブロック内で 
+    ((<Transaction#abort|RPM::Transaction#abort>)) した場合は 
+    (({false})) を返す。トランザクション処理中に問題が発生した場合は、
+    次の Symbol をキーとしたハッシュの配列を返す。
+
+    : (({:type}))
+      問題の種類。
+    : (({:key}))
+      トランザクションのキー。
+    : (({:package}))
+      問題となったパッケージ。
+    : (({:message}))
+      問題についての説明。
+
+    ((|root|)) が (({nil})) の場合 ((<RPM::DB#root>)) の値が使用される。
+
+== RPM::Transaction
+
+=== スーパクラス
+
+  * Data
+
+=== メソッド
+
+--- RPM::Transaction#db
+
+    トランザクションに対応するデータベースを返す。
+
+--- RPM::Transaction#script_file
+--- RPM::Transaction#script_file=(file)
+
+    トランザクションのログを書き出すファイルを取得、指定する。
+
+--- RPM::Transaction#install(key, pkg)
+
+    インストールトランザクションを追加する。
+
+--- RPM::Transaction#upgrade(key, pkg)
+
+    アップグレードトランザクションを追加する。
+
+--- RPM::Transaction#available(key, pkg)
+
+    シラソ
+
+--- RPM::Transaction#delete(key)
+
+    トランザクションを削除する。
+
+--- RPM::Transaction#check
+
+    依存関係をチェックする。依存関係が満されていない場合は、
+    ((<Dependency|RPM::Dependency>)) の配列を返す。依存関係が満たされ
+     ている場合は (({nil})) を返す。
+
+--- RPM::Transaction#order
+
+    処理順序を決定する。
+
+--- RPM::Transaction#keys
+
+    追加された全トランザクションに対応しているキーの配列を返す。
+
+--- RPM::Transaction#commit(flag=RPM::TRANS_FLAG_NONE, filter=RPM::PROB_FILTER_NONE)
+--- RPM::Transaction#commit(flag=RPM::TRANS_FLAG_NONE, filter=RPM::PROB_FILTER_NONE) {|sig| ... }
+
+    追加したトランザクションを実行する。ブロックが与えられた場合、
+    トランザクションの進捗状況を格納している次の Symbol をキーとするハッ
+    シュを引数にして、ブロックを評価する。
+
+    : (({:type}))
+      イベントのタイプ。
+    : (({:key}))
+      トランザクションのキー。
+    : (({:package}))
+      処理中のパッケージ。
+    : (({:amount}))
+      進捗状況。
+    : (({:total}))
+      トータルサイズ。
+
+--- RPM::Transaction#abort
+
+    トランザクションを中断する。データベースは変更されない。
+
+== RPM::CallbackData
+
+=== スーパクラス
+
+  * Struct
+
+=== メソッド
+
+--- RPM::CallbackData#type
+--- RPM::CallbackData#key
+--- RPM::CallbackData#package
+--- RPM::CallbackData#amount
+--- RPM::CallbackData#total
+
+== RPM::Problem
+
+=== スーパクラス
+
+  * Struct
+
+=== メソッド
+
+--- RPM::Problem#type
+--- RPM::Problem#key
+--- RPM::Problem#package
+--- RPM::Problem#description
+
+=end
