@@ -1,0 +1,42 @@
+diff -urN ruby-rpm-1.2.0/ext/rpm/file.c ruby-rpm-1.2.0.ts/ext/rpm/file.c
+--- ruby-rpm-1.2.0/ext/rpm/file.c	2004-10-10 00:04:16.468564587 -0400
++++ ruby-rpm-1.2.0.ts/ext/rpm/file.c	2004-10-10 00:04:56.142194524 -0400
+@@ -39,7 +39,7 @@
+ 	rb_ivar_set(file, id_link_to, RSTRING(link_to)->len ? link_to : Qnil);
+ 	rb_ivar_set(file, id_size, rb_Integer(size));
+ 	if (rb_obj_is_kind_of(mtime, rb_cTime) == Qfalse) {
+-		mtime = rb_time_new(NUM2INT(rb_Integer(mtime)));
++		mtime = rb_time_new(NUM2INT(rb_Integer(mtime)), 0);
+ 	}
+ 	rb_ivar_set(file, id_mtime, mtime);
+ 	rb_ivar_set(file, id_owner, owner);
+@@ -58,12 +58,16 @@
+ 			 dev_t rdev, mode_t mode, rpmfileAttrs attr, rpmfileState state)
+ {
+ 	VALUE file, argv[11];
++	time_t secs, msecs;
++
++	secs = (int) (mtime / 1);
++	msecs = ((mtime / 1) - secs) * 1000;
+ 
+ 	argv[0] = rb_str_new2(path);
+ 	argv[1] = rb_str_new2(md5sum);
+ 	argv[2] = link_to ? rb_str_new2(link_to) : Qnil;
+ 	argv[3] = UINT2NUM(size);
+-	argv[4] = rb_time_new(mtime);
++	argv[4] = rb_time_new(secs, msecs);
+ 	argv[5] = owner ? rb_str_new2(owner) : Qnil;
+ 	argv[6] = group ? rb_str_new2(group) : Qnil;
+ 	argv[7] = UINT2NUM(rdev);
+diff -urN ruby-rpm-1.2.0/ext/rpm/package.c ruby-rpm-1.2.0.ts/ext/rpm/package.c
+--- ruby-rpm-1.2.0/ext/rpm/package.c	2004-05-29 06:14:20.000000000 -0400
++++ ruby-rpm-1.2.0.ts/ext/rpm/package.c	2004-10-09 23:45:50.369213931 -0400
+@@ -634,7 +634,7 @@
+ 	for (i = 0; i < count; i++) {
+ 		VALUE chglog = rb_struct_new(
+ 			rpm_sChangeLog,
+-			rb_time_new(times[i]),
++			rb_time_new(times[i], 0),
+ 			rb_str_new2(names[i]),
+ 			rb_str_new2(texts[i]));
+ 		rb_ary_push(cl, chglog);

@@ -634,7 +634,7 @@ rpm_package_get_changelog(VALUE pkg)
 	for (i = 0; i < count; i++) {
 		VALUE chglog = rb_struct_new(
 			rpm_sChangeLog,
-			rb_time_new(times[i]),
+			rb_time_new(times[i], 0),
 			rb_str_new2(names[i]),
 			rb_str_new2(texts[i]));
 		rb_ary_push(cl, chglog);
