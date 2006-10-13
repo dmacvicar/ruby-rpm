@@ -200,6 +200,7 @@ rpm_db_close(VALUE db)
 {
 	db_unref((rpm_db_t*)DATA_PTR(db));
 	DATA_PTR(db) = NULL;
+        return Qnil;
 }
 
 VALUE
@@ -247,7 +248,8 @@ rpm_db_each_match(VALUE db, VALUE key, VALUE val)
 	mi = rpm_db_init_iterator (db, key, val);
 
 	if (!NIL_P(mi))
-		rpm_mi_each (mi);
+		return rpm_mi_each (mi);
+        return Qnil;
 }
 
 VALUE
@@ -1040,6 +1042,7 @@ rpm_mi_each(VALUE mi)
 	VALUE p;
 	while(!NIL_P( p = rpm_mi_next_iterator(mi)))
 		rb_yield (p);
+        return Qnil;
 }
 
 void

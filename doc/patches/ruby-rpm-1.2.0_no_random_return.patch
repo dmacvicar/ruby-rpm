@@ -1,0 +1,42 @@
+Index: ext/rpm/private.h
+===================================================================
+--- ext/rpm/private.h.orig
++++ ext/rpm/private.h
+@@ -27,6 +27,7 @@
+ #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
+ #include <rpmts.h>
+ #include <rpmps.h>
++#include <rpmds.h>
+ #include "rpm40_compat.h"
+ #endif
+ 
+Index: ext/rpm/db.c
+===================================================================
+--- ext/rpm/db.c.orig
++++ ext/rpm/db.c
+@@ -200,6 +200,7 @@ rpm_db_close(VALUE db)
+ {
+ 	db_unref((rpm_db_t*)DATA_PTR(db));
+ 	DATA_PTR(db) = NULL;
++        return Qnil;
+ }
+ 
+ VALUE
+@@ -247,7 +248,8 @@ rpm_db_each_match(VALUE db, VALUE key, V
+ 	mi = rpm_db_init_iterator (db, key, val);
+ 
+ 	if (!NIL_P(mi))
+-		rpm_mi_each (mi);
++		return rpm_mi_each (mi);
++        return Qnil;
+ }
+ 
+ VALUE
+@@ -1040,6 +1042,7 @@ rpm_mi_each(VALUE mi)
+ 	VALUE p;
+ 	while(!NIL_P( p = rpm_mi_next_iterator(mi)))
+ 		rb_yield (p);
++        return Qnil;
+ }
+ 
+ void

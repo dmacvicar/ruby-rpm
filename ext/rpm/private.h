@@ -27,6 +27,7 @@
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
 #include <rpmts.h>
 #include <rpmps.h>
+#include <rpmds.h>
 #include "rpm40_compat.h"
 #endif
 
