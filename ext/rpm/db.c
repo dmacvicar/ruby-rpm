@@ -746,10 +746,17 @@ rpm_transaction_keys(VALUE trans)
 	return rb_ivar_get(trans, id_keys);
 }
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,4,5)
 static void*
 transaction_callback(const void* hd, const rpmCallbackType type,
 					 const unsigned long amount, const unsigned long total,
 					 fnpyKey key, rpmCallbackData data)
+#else
+static void*
+transaction_callback(const void* hd, const rpmCallbackType type,
+					 const unsigned long long amount, const unsigned long long total,
+					 fnpyKey key, rpmCallbackData data)
+#endif
 {
 	VALUE trans = (VALUE)data;
 	FD_t fdt;
