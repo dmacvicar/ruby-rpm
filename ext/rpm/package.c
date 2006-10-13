@@ -8,6 +8,8 @@
 
 #include "private.h"
 
+char *stpcpy( char *dest, const char *source );
+
 VALUE rpm_cPackage;
 VALUE rpm_sChangeLog;
 
@@ -55,6 +57,8 @@ package_new_from_header(VALUE klass, Header hdr)
 	VALUE signature;
 
 	p = Qnil;
+  signature = Qnil;
+
 	if (hdr == NULL) {
 		return Qnil;
 	}
@@ -97,12 +101,13 @@ package_s_create(VALUE klass, VALUE name, VALUE version)
         	headerAddEntry(hdr,RPMTAG_EPOCH,RPM_INT32_TYPE,&e,1);
 	}
 	pkg = package_new_from_header(klass, hdr);
+  return pkg;
 }
 
 static VALUE
 package_s_open(VALUE klass, VALUE filename)
 {
-	VALUE pkg;
+	VALUE pkg = Qnil;
 	FD_t fd;
 	Header hdr, sigs;
 	rpmRC rc;
@@ -193,6 +198,7 @@ rpm_package_copy_tags(VALUE from,VALUE to,VALUE tags)
 	for (i=0;i<length;i++)
 		copy_tags[i] = NUM2INT(rb_ary_entry(tags, i));
 	headerCopyTags(RPM_HEADER(from),RPM_HEADER(to),copy_tags);
+  return Qnil;
 }
 
 VALUE
@@ -234,6 +240,7 @@ rpm_package_add_dependency(VALUE pkg,VALUE dep)
 	headerAddOrAppendEntry(RPM_HEADER(pkg),nametag,RPM_STRING_ARRAY_TYPE,&name,1);
 	headerAddOrAppendEntry(RPM_HEADER(pkg),versiontag,RPM_STRING_ARRAY_TYPE,&evr,1);
 	headerAddOrAppendEntry(RPM_HEADER(pkg),flagstag,RPM_INT32_TYPE,&flag,1);
+  return Qnil;
 }
 
 VALUE
@@ -251,6 +258,7 @@ rpm_package_add_int32(VALUE pkg,VALUE tag,VALUE val)
 	}
 
 	headerAddOrAppendEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_INT32_TYPE,&v,1);
+  return Qnil;
 }
 
 VALUE
@@ -260,6 +268,7 @@ rpm_package_add_string_array(VALUE pkg,VALUE tag,VALUE val)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 	headerAddOrAppendEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_STRING_ARRAY_TYPE,&RSTRING(val)->ptr,1);
+  return Qnil;
 }
 
 VALUE
@@ -269,6 +278,7 @@ rpm_package_add_string(VALUE pkg,VALUE tag,VALUE val)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 	headerAddEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_STRING_TYPE,RSTRING(val)->ptr,1);
+  return Qnil;
 }
 
 VALUE
@@ -278,6 +288,7 @@ rpm_package_add_binary(VALUE pkg,VALUE tag,VALUE val)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 	headerAddEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_BIN_TYPE,RSTRING(val)->ptr,RSTRING(val)->len);
+  return Qnil;
 }
 
 VALUE
@@ -335,6 +346,8 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 	case RPMTAG_DESCRIPTION:
 		i18n_p = 1;
 		break;
+  default:
+    break;
 	}
 
 	switch (type) {
