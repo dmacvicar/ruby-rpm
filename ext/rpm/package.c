@@ -440,6 +440,17 @@ rpm_package_get_name(VALUE pkg)
 }
 
 VALUE
+rpm_package_get_arch(VALUE pkg)
+{
+	VALUE arch;
+	const char* a;
+	headerNEVRA(RPM_HEADER(pkg), NULL, NULL, NULL, NULL, &a);
+	arch = a ? rb_str_new2(a) : Qnil;
+
+	return arch;
+}
+
+VALUE
 rpm_package_get_signature(VALUE pkg)
 {
 	VALUE signature = rb_ivar_get(pkg, id_signature);
@@ -677,15 +688,21 @@ rpm_package_to_s(VALUE pkg)
 	char buf[BUFSIZ];
 	VALUE name = rpm_package_get_name(pkg);
 	VALUE ver  = rpm_package_get_version(pkg);
+	VALUE arch = rpm_package_get_arch(pkg);
 
 	if (NIL_P(name)) {
 		buf[0] = '\0';
 	} else if (NIL_P(ver)) {
 		sprintf(buf, "%s", RSTRING(name)->ptr);
-	} else {
+	} else if (NIL_P(arch)) {
 		sprintf(buf, "%s-%s",
 				RSTRING(name)->ptr,
 				RSTRING(rpm_version_to_s(ver))->ptr);
+	} else {
+		sprintf(buf, "%s-%s-%s",
+				RSTRING(name)->ptr,
+				RSTRING(rpm_version_to_s(ver))->ptr,
+				RSTRING(arch)->ptr);
 	}
 
 	return rb_str_new2(buf);
@@ -705,6 +722,7 @@ Init_rpm_package(void)
 	rb_define_method(rpm_cPackage, "[]", rpm_package_aref, 1);
 	rb_define_method(rpm_cPackage, "delete_tag", rpm_package_delete_tag, 1);
 	rb_define_method(rpm_cPackage, "signature", rpm_package_get_signature, 0);
+	rb_define_method(rpm_cPackage, "arch", rpm_package_get_arch, 0);
 	rb_define_method(rpm_cPackage, "name", rpm_package_get_name, 0);
 	rb_define_method(rpm_cPackage, "version", rpm_package_get_version, 0);
 	rb_define_method(rpm_cPackage, "files", rpm_package_get_files, 0);
