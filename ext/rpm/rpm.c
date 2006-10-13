@@ -433,7 +433,9 @@ Init_rpmmodule(void)
 	DEFINE_SENSE(TRIGGER);
 #endif
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
+#if defined(RPMSENSE_PATCHES)
 	DEFINE_SENSE(PATCHES);
+#endif
 	DEFINE_SENSE(CONFIG);
 #endif
 #undef DEFINE_SENSE
