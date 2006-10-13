@@ -21,7 +21,9 @@ end
 
 def check_db
   dir_config('db')
-
+  if have_library("db-4.2","db_version")
+    return true
+  end
   4.downto(2) do |i|
     if have_library("db-#{i}.0", "db_version") or
         have_library("db#{i}", "db_version") then

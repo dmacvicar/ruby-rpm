@@ -39,7 +39,7 @@ file_initialize(VALUE file, VALUE path, VALUE md5sum, VALUE link_to,
 	rb_ivar_set(file, id_link_to, RSTRING(link_to)->len ? link_to : Qnil);
 	rb_ivar_set(file, id_size, rb_Integer(size));
 	if (rb_obj_is_kind_of(mtime, rb_cTime) == Qfalse) {
-		mtime = rb_time_new(NUM2INT(rb_Integer(mtime)), 0);
+		mtime = rb_time_new(NUM2INT(rb_Integer(mtime)), (time_t)0);
 	}
 	rb_ivar_set(file, id_mtime, mtime);
 	rb_ivar_set(file, id_owner, owner);
@@ -58,16 +58,12 @@ rpm_file_new(const char* path, const char* md5sum, const char* link_to,
 			 dev_t rdev, mode_t mode, rpmfileAttrs attr, rpmfileState state)
 {
 	VALUE file, argv[11];
-	time_t secs, msecs;
-
-	secs = (int) (mtime / 1);
-	msecs = ((mtime / 1) - secs) * 1000;
 
 	argv[0] = rb_str_new2(path);
 	argv[1] = rb_str_new2(md5sum);
 	argv[2] = link_to ? rb_str_new2(link_to) : Qnil;
 	argv[3] = UINT2NUM(size);
-	argv[4] = rb_time_new(secs, msecs);
+	argv[4] = rb_time_new(mtime, (time_t)0);
 	argv[5] = owner ? rb_str_new2(owner) : Qnil;
 	argv[6] = group ? rb_str_new2(group) : Qnil;
 	argv[7] = UINT2NUM(rdev);

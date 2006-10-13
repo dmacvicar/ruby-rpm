@@ -1,3 +1,26 @@
+2004-06-05  Kazuhiko  <kazuhiko@fdiary.net>
+
+	* ext/rpm/db.c (rpm_transaction_check): initial value of 'evr' =
+	"" instead of NULL.
+	(package_new_from_NEVR): free 'tmp_nevr' after using 'name'.
+
+2004-06-04  Kazuhiko  <kazuhiko@fdiary.net>
+
+	* ext/rpm/spec.c (rpm_spec_build): add rpmts into the first
+	argument of buildSpec if rpm-4.2.
+
+	* ext/rpm/db.c (rpm_transaction_set_script_file): use
+	rpmtsSetScriptFd instead of rpmtransSetScriptFd if rpm-4.2.
+
+	(rpm_transaction_available): use rpmtsAvailablePackage instead of
+	rpmtransAvailablePackage if rpm-4.2.
+	
+
+2004-06-03  Kazuhiko  <kazuhiko@fdiary.net>
+
+	* ext/rpm/dependency.c (rpm_dependency_is_satisfy): use
+	rpmdsCompare instead of rpmRangesOverlap if rpm-4.2.
+
 2004-05-23  Kazuhiko  <kazuhiko@fdiary.net>
 
 	* tests/test_ts.rb: add 'init_rpmrc()'. build with '--rcfile'

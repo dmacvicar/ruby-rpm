@@ -4,7 +4,7 @@
  * Copyright (C) 2002 Kenta MURATA <muraken2@nifty.com>.
  */
 
-/* $Id: db.c 27 2004-05-23 04:54:24Z zaki $ */
+/* $Id: db.c 45 2004-06-04 15:11:20Z kazuhiko $ */
 
 #include "private.h"
 
@@ -358,8 +358,10 @@ rpm_transaction_set_script_file(VALUE trans, VALUE file)
 	}
 	rb_ivar_set(trans, id_sf, file);
 	RPM_SCRIPT_FD(trans) = fdDup(NUM2INT(rb_Integer(file)));
-#if defined(RPMUPDATE)
+#if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	rpmtransSetScriptFd(RPM_TRANSACTION(trans), RPM_SCRIPT_FD(trans));
+#else
+	rpmtsSetScriptFd(RPM_TRANSACTION(trans), RPM_SCRIPT_FD(trans));
 #endif
 	return Qnil;
 }
@@ -446,8 +448,11 @@ rpm_transaction_available(VALUE trans, VALUE pkg, VALUE key)
 	}
 	rb_ary_push(keys, key);
 
-#if defined(RPMUPDATE)
+#if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	rpmtransAvailablePackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
+					   RSTRING(key)->ptr);
+#else
+	rpmtsAvailablePackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
 					   RSTRING(key)->ptr);
 #endif
 
@@ -557,6 +562,7 @@ package_new_from_NEVR(const char* nevr)
 	char *evr = NULL;
 	char *end = NULL;
 	char *tmp_nevr = NULL;
+	VALUE package = Qnil;
 	int i=0;
 
 	tmp_nevr = strdup(nevr);
@@ -577,10 +583,10 @@ package_new_from_NEVR(const char* nevr)
 		evr = "";
 	}
 
+	package = rpm_package_new_from_N_EVR(rb_str_new2(name),
+					     version_new_from_EVR(evr));
 	free(tmp_nevr);
-
-	return rpm_package_new_from_N_EVR(rb_str_new2(name),
-									  version_new_from_EVR(evr));
+	return package;
 }
 #endif
 
@@ -663,7 +669,7 @@ rpm_transaction_check(VALUE trans)
 
 				char *name = buf+2;
 				char *relation = NULL;
-				char *evr = NULL;
+				char *evr = "";
 				rpmsenseFlags sense_flags = 0;
 
 				end = strchr ( name, ' ');
@@ -710,8 +716,10 @@ rpm_transaction_check(VALUE trans)
 				break;
 			}
 
+#if 0
 			printf ("%d, type=%d, ignoreProblem=%d, str1=%s pkgNEVR=%s, %s\n",
 					i, p->type, p->ignoreProblem, p->str1, p->pkgNEVR, altNEVR);
+#endif
         }
 	}
 	ps = rpmpsFree(ps);

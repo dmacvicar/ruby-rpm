@@ -4,7 +4,7 @@
  * Copyright (C) 2002 Kenta MURATA <muraken2@nifty.com>.
  */
 
-/* $Id: package.c 27 2004-05-23 04:54:24Z zaki $ */
+/* $Id: package.c 45 2004-06-04 15:11:20Z kazuhiko $ */
 
 #include "private.h"
 
@@ -78,7 +78,7 @@ package_new_from_header(VALUE klass, Header hdr)
 }
 
 static VALUE
-package_s_create(VALUE klass, VALUE name,VALUE version)
+package_s_create(VALUE klass, VALUE name, VALUE version)
 {
 	Header hdr;
 	VALUE pkg;
@@ -645,7 +645,7 @@ rpm_package_get_changelog(VALUE pkg)
 	for (i = 0; i < count; i++) {
 		VALUE chglog = rb_struct_new(
 			rpm_sChangeLog,
-			rb_time_new(times[i], 0),
+			rb_time_new(times[i], (time_t)0),
 			rb_str_new2(names[i]),
 			rb_str_new2(texts[i]));
 		rb_ary_push(cl, chglog);

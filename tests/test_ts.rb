@@ -71,6 +71,7 @@ END_SPEC_C
   end
 
   def setup
+    require 'fileutils'
     @work_dir = Dir.tmpdir + "/.ruby-rpm-test"
 
     @rpm_dir = "#{@work_dir}/rpm"

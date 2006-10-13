@@ -4,7 +4,7 @@
  * Copyright (C) 2002 Kenta MURATA <muraken2@nifty.com>.
  */
 
-/* $Id: spec.c 27 2004-05-23 04:54:24Z zaki $ */
+/* $Id: spec.c 44 2004-06-03 16:58:10Z kazuhiko $ */
 
 #include "private.h"
 
@@ -282,8 +282,13 @@ rpm_spec_build(int argc, VALUE* argv, VALUE spec)
 		rb_raise(rb_eArgError, "argument too many(0..1)");
 	}
 
-#if defined(RPMUPDATE)
+#if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	rc = buildSpec(RPM_SPEC(spec), flags,test);
+#else
+	rpmts ts = NULL;
+	ts = rpmtsCreate();
+	rc = buildSpec(ts, RPM_SPEC(spec), flags,test);
+	ts_free(ts);
 #endif
 
 	return INT2NUM(rc);

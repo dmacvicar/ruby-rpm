@@ -4,7 +4,7 @@
  * Copyright (C) 2002 Kenta MURATA <muraken2@nifty.com>.
  */
 
-/* $Id: dependency.c 27 2004-05-23 04:54:24Z zaki $ */
+/* $Id: dependency.c 42 2004-06-03 14:26:37Z kazuhiko $ */
 
 #include "private.h"
 
@@ -196,11 +196,14 @@ rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 
-#if defined(RPMUPDATE)
+#if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	if (rpmRangesOverlap(name,ovre,oflag,
 			     name,svre,NUM2INT(rb_ivar_get(dep, id_flags))))
-		return Qtrue;
+#else
+	if (rpmdsCompare(rpmdsSingle(RPMTAG_PROVIDENAME, name, ovre, oflag),
+			 rpmdsSingle(RPMTAG_PROVIDENAME, name, svre, NUM2INT(rb_ivar_get(dep, id_flags)))))
 #endif
+		return Qtrue;
 	return Qfalse;
 }
 
