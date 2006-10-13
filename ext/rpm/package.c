@@ -645,7 +645,7 @@ rpm_package_get_changelog(VALUE pkg)
 	for (i = 0; i < count; i++) {
 		VALUE chglog = rb_struct_new(
 			rpm_sChangeLog,
-			rb_time_new(times[i], (time_t)0),
+			rb_time_new((time_t)times[i], (time_t)0),
 			rb_str_new2(names[i]),
 			rb_str_new2(texts[i]));
 		rb_ary_push(cl, chglog);
@@ -693,16 +693,37 @@ rpm_package_to_s(VALUE pkg)
 	if (NIL_P(name)) {
 		buf[0] = '\0';
 	} else if (NIL_P(ver)) {
-		sprintf(buf, "%s", RSTRING(name)->ptr);
+		snprintf(buf, BUFSIZ, "%s", RSTRING(name)->ptr);
 	} else if (NIL_P(arch)) {
-		sprintf(buf, "%s-%s",
+		snprintf(buf, BUFSIZ, "%s-%s",
 				RSTRING(name)->ptr,
 				RSTRING(rpm_version_to_s(ver))->ptr);
 	} else {
-		sprintf(buf, "%s-%s-%s",
+		snprintf(buf, BUFSIZ, "%s-%s-%s",
 				RSTRING(name)->ptr,
 				RSTRING(rpm_version_to_s(ver))->ptr,
 				RSTRING(arch)->ptr);
+	}
+
+	return rb_str_new2(buf);
+}
+
+VALUE
+rpm_package_inspect(VALUE pkg)
+{
+	char buf[BUFSIZ];
+	VALUE name = rpm_package_get_name(pkg);
+	VALUE ver  = rpm_package_get_version(pkg);
+
+	if (NIL_P(name)) {
+		buf[0] = '\0';
+	} else if (NIL_P(ver)) {
+		snprintf(buf, BUFSIZ, "#<RPM::Package name=%s>",
+				RSTRING(rb_inspect(name))->ptr);
+	} else {
+		snprintf(buf, BUFSIZ, "#<RPM::Package name=%s, version=%s>",
+				RSTRING(rb_inspect(name))->ptr,
+				RSTRING(rb_inspect(ver))->ptr);
 	}
 
 	return rb_str_new2(buf);
@@ -739,6 +760,7 @@ Init_rpm_package(void)
 	rb_define_method(rpm_cPackage, "dump", rpm_package_dump, 0);
 	rb_define_method(rpm_cPackage, "_dump", rpm_package__dump, 1);
 	rb_define_method(rpm_cPackage, "to_s", rpm_package_to_s, 0);
+	rb_define_method(rpm_cPackage, "inspect", rpm_package_inspect, 0);
 	rb_define_method(rpm_cPackage, "copy_to", rpm_package_copy_tags, 2);
 
 	rpm_sChangeLog = rb_struct_define(NULL, "time", "name", "text", NULL);

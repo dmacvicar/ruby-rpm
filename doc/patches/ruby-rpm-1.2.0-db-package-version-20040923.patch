@@ -1,0 +1,135 @@
+diff -ur ruby-rpm-1.2.0/ext/rpm/db.c ruby-rpm-1.2.0-fix/ext/rpm/db.c
+--- ruby-rpm-1.2.0/ext/rpm/db.c	2004-09-23 19:52:37.810679360 +0900
++++ ruby-rpm-1.2.0-fix/ext/rpm/db.c	2004-09-23 19:57:05.312012976 +0900
+@@ -485,13 +485,14 @@
+ 	} else
+ 		rb_raise(rb_eTypeError, "illegal argument type");
+ 
+-	while (!NIL_P(rpm_mi_next_iterator(mi))) {
++	VALUE p;
++	while (!NIL_P(p = rpm_mi_next_iterator(mi))) {
+ 		VALUE off = rpm_mi_get_iterator_offset(mi);
+ 		if (!NIL_P(off)){
+ #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
+ 			rpmtransRemovePackage(RPM_TRANSACTION(trans), NUM2INT(off));
+ #else
+-			rpmtsAddEraseElement(RPM_TRANSACTION(trans), RPM_HEADER(pkg), NUM2INT(off));
++			rpmtsAddEraseElement(RPM_TRANSACTION(trans), RPM_HEADER(p), NUM2INT(off));
+ #endif
+ 		}
+ 	}
+@@ -752,7 +753,7 @@
+ static void*
+ transaction_callback(const void* hd, const rpmCallbackType type,
+ 					 const unsigned long amount, const unsigned long total,
+-					 const void* key, rpmCallbackData data)
++					 fnpyKey key, rpmCallbackData data)
+ {
+ 	VALUE trans = (VALUE)data;
+ 	FD_t fdt;
+@@ -760,7 +761,7 @@
+ 	VALUE sig;
+ 	VALUE rv;
+ 
+-	sig = rb_struct_new(rpm_sCallbackData, INT2NUM(type), key ? rb_str_new2(key):Qnil,
++	sig = rb_struct_new(rpm_sCallbackData, INT2NUM(type), key ? (VALUE)key:Qnil,
+ 						rpm_package_new_from_header(hdr),
+ 						UINT2NUM(amount), UINT2NUM(total));
+ 
+diff -ur ruby-rpm-1.2.0/ext/rpm/package.c ruby-rpm-1.2.0-fix/ext/rpm/package.c
+--- ruby-rpm-1.2.0/ext/rpm/package.c	2004-09-23 19:52:37.810679360 +0900
++++ ruby-rpm-1.2.0-fix/ext/rpm/package.c	2004-09-23 18:40:13.720081512 +0900
+@@ -636,7 +636,7 @@
+ 	for (i = 0; i < count; i++) {
+ 		VALUE chglog = rb_struct_new(
+ 			rpm_sChangeLog,
+-			rb_time_new(times[i], (time_t)0),
++			rb_time_new((time_t)times[i], (time_t)0),
+ 			rb_str_new2(names[i]),
+ 			rb_str_new2(texts[i]));
+ 		rb_ary_push(cl, chglog);
+@@ -683,9 +683,9 @@
+ 	if (NIL_P(name)) {
+ 		buf[0] = '\0';
+ 	} else if (NIL_P(ver)) {
+-		sprintf(buf, "%s", RSTRING(name)->ptr);
++		snprintf(buf, BUFSIZ, "%s", RSTRING(name)->ptr);
+ 	} else {
+-		sprintf(buf, "%s-%s",
++		snprintf(buf, BUFSIZ, "%s-%s",
+ 				RSTRING(name)->ptr,
+ 				RSTRING(rpm_version_to_s(ver))->ptr);
+ 	}
+@@ -693,6 +693,27 @@
+ 	return rb_str_new2(buf);
+ }
+ 
++VALUE
++rpm_package_inspect(VALUE pkg)
++{
++	char buf[BUFSIZ];
++	VALUE name = rpm_package_get_name(pkg);
++	VALUE ver  = rpm_package_get_version(pkg);
++
++	if (NIL_P(name)) {
++		buf[0] = '\0';
++	} else if (NIL_P(ver)) {
++		snprintf(buf, BUFSIZ, "#<RPM::Package name=%s>",
++				RSTRING(rb_inspect(name))->ptr);
++	} else {
++		snprintf(buf, BUFSIZ, "#<RPM::Package name=%s, version=%s>",
++				RSTRING(rb_inspect(name))->ptr,
++				RSTRING(rb_inspect(ver))->ptr);
++	}
++
++	return rb_str_new2(buf);
++}
++
+ void
+ Init_rpm_package(void)
+ {
+@@ -723,6 +744,7 @@
+ 	rb_define_method(rpm_cPackage, "dump", rpm_package_dump, 0);
+ 	rb_define_method(rpm_cPackage, "_dump", rpm_package__dump, 1);
+ 	rb_define_method(rpm_cPackage, "to_s", rpm_package_to_s, 0);
++	rb_define_method(rpm_cPackage, "inspect", rpm_package_inspect, 0);
+ 	rb_define_method(rpm_cPackage, "copy_to", rpm_package_copy_tags, 2);
+ 
+ 	rpm_sChangeLog = rb_struct_define(NULL, "time", "name", "text", NULL);
+diff -ur ruby-rpm-1.2.0/ext/rpm/version.c ruby-rpm-1.2.0-fix/ext/rpm/version.c
+--- ruby-rpm-1.2.0/ext/rpm/version.c	2004-05-29 19:14:20.000000000 +0900
++++ ruby-rpm-1.2.0-fix/ext/rpm/version.c	2004-09-23 18:34:24.138226032 +0900
+@@ -300,6 +300,25 @@
+ 	return rb_str_new2(buf);
+ }
+ 
++VALUE
++rpm_version_inspect(VALUE ver)
++{
++	char buf[BUFSIZ];
++	char *p = buf;
++	VALUE v, r, e;
++	v = rb_ivar_get(ver, id_v);
++	r = rb_ivar_get(ver, id_r);
++	e = rb_ivar_get(ver, id_e);
++
++	if (!NIL_P(e)) {
++		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%d>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, RSTRING(rb_inspect(e))->ptr);
++        } else {
++		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr);
++	}
++
++	return rb_str_new2(buf);
++}
++
+ void
+ Init_rpm_version(void)
+ {
+@@ -314,6 +333,7 @@
+ 	rb_define_method(rpm_cVersion, "e", rpm_version_get_e, 0);
+ 	rb_define_method(rpm_cVersion, "to_s", rpm_version_to_s, 0);
+ 	rb_define_method(rpm_cVersion, "to_vre", rpm_version_to_vre, 0);
++	rb_define_method(rpm_cVersion, "inspect", rpm_version_inspect, 0);
+ 
+ 	id_v = rb_intern("version");
+ 	id_r = rb_intern("release");

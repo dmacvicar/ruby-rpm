@@ -300,6 +300,25 @@ rpm_version_to_vre(VALUE ver)
 	return rb_str_new2(buf);
 }
 
+VALUE
+rpm_version_inspect(VALUE ver)
+{
+	char buf[BUFSIZ];
+	char *p = buf;
+	VALUE v, r, e;
+	v = rb_ivar_get(ver, id_v);
+	r = rb_ivar_get(ver, id_r);
+	e = rb_ivar_get(ver, id_e);
+
+	if (!NIL_P(e)) {
+		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%d>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, RSTRING(rb_inspect(e))->ptr);
+        } else {
+		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr);
+	}
+
+	return rb_str_new2(buf);
+}
+
 void
 Init_rpm_version(void)
 {
@@ -314,6 +333,7 @@ Init_rpm_version(void)
 	rb_define_method(rpm_cVersion, "e", rpm_version_get_e, 0);
 	rb_define_method(rpm_cVersion, "to_s", rpm_version_to_s, 0);
 	rb_define_method(rpm_cVersion, "to_vre", rpm_version_to_vre, 0);
+	rb_define_method(rpm_cVersion, "inspect", rpm_version_inspect, 0);
 
 	id_v = rb_intern("version");
 	id_r = rb_intern("release");

@@ -485,13 +485,14 @@ rpm_transaction_delete(VALUE trans, VALUE pkg)
 	} else
 		rb_raise(rb_eTypeError, "illegal argument type");
 
-	while (!NIL_P(rpm_mi_next_iterator(mi))) {
+	VALUE p;
+	while (!NIL_P(p = rpm_mi_next_iterator(mi))) {
 		VALUE off = rpm_mi_get_iterator_offset(mi);
 		if (!NIL_P(off)){
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 			rpmtransRemovePackage(RPM_TRANSACTION(trans), NUM2INT(off));
 #else
-			rpmtsAddEraseElement(RPM_TRANSACTION(trans), RPM_HEADER(pkg), NUM2INT(off));
+			rpmtsAddEraseElement(RPM_TRANSACTION(trans), RPM_HEADER(p), NUM2INT(off));
 #endif
 		}
 	}
@@ -748,7 +749,7 @@ rpm_transaction_keys(VALUE trans)
 static void*
 transaction_callback(const void* hd, const rpmCallbackType type,
 					 const unsigned long amount, const unsigned long total,
-					 const void* key, rpmCallbackData data)
+					 fnpyKey key, rpmCallbackData data)
 {
 	VALUE trans = (VALUE)data;
 	FD_t fdt;
@@ -756,7 +757,7 @@ transaction_callback(const void* hd, const rpmCallbackType type,
 	VALUE sig;
 	VALUE rv;
 
-	sig = rb_struct_new(rpm_sCallbackData, INT2NUM(type), key ? rb_str_new2(key):Qnil,
+	sig = rb_struct_new(rpm_sCallbackData, INT2NUM(type), key ? (VALUE)key:Qnil,
 						rpm_package_new_from_header(hdr),
 						UINT2NUM(amount), UINT2NUM(total));
 
