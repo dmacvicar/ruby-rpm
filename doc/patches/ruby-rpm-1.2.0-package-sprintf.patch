@@ -1,0 +1,33 @@
+diff -ur ruby-rpm-1.2.0/ext/rpm/package.c ruby-rpm-1.2.0-fix/ext/rpm/package.c
+--- ruby-rpm-1.2.0/ext/rpm/package.c	2004-10-03 19:28:36.163878096 +0900
++++ ruby-rpm-1.2.0-fix/ext/rpm/package.c	2004-10-03 19:21:05.261425688 +0900
+@@ -431,6 +431,21 @@
+ }
+ 
+ VALUE
++rpm_package_sprintf(VALUE pkg, VALUE fmt)
++{
++	const char *errstr = "(unknown error)";
++	const char *str;
++
++	str = headerSprintf(RPM_HEADER(pkg), StringValueCStr(fmt),
++			rpmTagTable, rpmHeaderFormats, &errstr);
++	if (str == NULL) {
++		rb_raise(rb_eRuntimeError, "incorrect format: %s",
++				 errstr);
++	}
++	return rb_str_new2(str);
++}
++
++VALUE
+ rpm_package_get_name(VALUE pkg)
+ {
+ 	VALUE name;
+@@ -727,6 +742,7 @@
+ 	rb_define_singleton_method(rpm_cPackage, "use_cache=", package_use_cache, 1);
+ 	rb_define_method(rpm_cPackage, "[]", rpm_package_aref, 1);
+ 	rb_define_method(rpm_cPackage, "delete_tag", rpm_package_delete_tag, 1);
++	rb_define_method(rpm_cPackage, "sprintf", rpm_package_sprintf, 1);
+ 	rb_define_method(rpm_cPackage, "signature", rpm_package_get_signature, 0);
+ 	rb_define_method(rpm_cPackage, "name", rpm_package_get_name, 0);
+ 	rb_define_method(rpm_cPackage, "version", rpm_package_get_version, 0);

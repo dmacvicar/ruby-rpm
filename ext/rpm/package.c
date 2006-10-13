@@ -429,6 +429,21 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 }
 
 VALUE
+rpm_package_sprintf(VALUE pkg, VALUE fmt)
+{
+	const char *errstr = "(unknown error)";
+	const char *str;
+
+	str = headerSprintf(RPM_HEADER(pkg), StringValueCStr(fmt),
+			rpmTagTable, rpmHeaderFormats, &errstr);
+	if (str == NULL) {
+		rb_raise(rb_eRuntimeError, "incorrect format: %s",
+				 errstr);
+	}
+	return rb_str_new2(str);
+}
+
+VALUE
 rpm_package_get_name(VALUE pkg)
 {
 	VALUE name;
@@ -742,6 +757,7 @@ Init_rpm_package(void)
 	rb_define_singleton_method(rpm_cPackage, "use_cache=", package_use_cache, 1);
 	rb_define_method(rpm_cPackage, "[]", rpm_package_aref, 1);
 	rb_define_method(rpm_cPackage, "delete_tag", rpm_package_delete_tag, 1);
+	rb_define_method(rpm_cPackage, "sprintf", rpm_package_sprintf, 1);
 	rb_define_method(rpm_cPackage, "signature", rpm_package_get_signature, 0);
 	rb_define_method(rpm_cPackage, "arch", rpm_package_get_arch, 0);
 	rb_define_method(rpm_cPackage, "name", rpm_package_get_name, 0);
