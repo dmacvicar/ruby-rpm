@@ -631,7 +631,9 @@ Init_rpmmodule(void)
 	if (!temp) {
 		temp = "/tmp";
 	} else {
-		temp = strchr(temp, '=') + 1;
+		char * tmpdir;
+		tmpdir = strchr(temp, '=');
+		if(tmpdir) temp = tmpdir + 1;
 	}
 
 	ruby_rpm_temp_format = rb_str_new2(temp);
