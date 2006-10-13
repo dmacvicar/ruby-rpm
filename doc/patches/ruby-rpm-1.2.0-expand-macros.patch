@@ -1,0 +1,64 @@
+--- ruby-rpm-1.2.0/ext/rpm/rpm.c	2004-09-13 08:04:23.300090760 +0900
++++ ruby-rpm-1.2.0-fix/ext/rpm/rpm.c	2004-09-13 07:49:39.726414376 +0900
+@@ -11,6 +11,12 @@
+ VALUE rpm_mRPM;
+ 
+ static VALUE
++m_expand(VALUE m, VALUE name)
++{
++	return rb_str_new2(rpmExpand(StringValueCStr(name), NULL));
++}
++
++static VALUE
+ m_aref(VALUE m, VALUE name)
+ {
+ 	char  buf[BUFSIZ];
+@@ -604,6 +610,7 @@
+ 	DEF_MIRE(GLOB);
+ #undef DEF_MIRE
+ 
++	rb_define_module_function(rpm_mRPM, "expand", m_expand, 1);
+ 	rb_define_module_function(rpm_mRPM, "[]", m_aref, 1);
+ 	rb_define_module_function(rpm_mRPM, "[]=", m_aset, 2);
+ 	rb_define_module_function(rpm_mRPM, "readrc", m_readrc, -1);
+--- ruby-rpm-1.2.0/ext/rpm/spec.c	2004-09-13 08:04:23.300090760 +0900
++++ ruby-rpm-1.2.0-fix/ext/rpm/spec.c	2004-09-13 07:03:21.031840160 +0900
+@@ -294,6 +294,30 @@
+ 	return INT2NUM(rc);
+ }
+ 
++VALUE
++rpm_spec_expand_macros(VALUE spec, VALUE name)
++{
++	char  buf[BUFSIZ];
++	char* tmp;
++	VALUE val;
++
++	if (TYPE(name) != T_STRING) {
++		rb_raise(rb_eTypeError, "illegal argument type");
++	}
++
++	sprintf(buf, "%%{%s}", RSTRING(name)->ptr);
++	tmp = strdup(buf);
++	expandMacros(RPM_SPEC(spec), RPM_SPEC(spec)->macros, buf, BUFSIZ);
++	if (strcmp(tmp, buf) == 0) {
++		val = Qnil;
++	} else {
++		val = rb_str_new2(buf);
++	}
++	free(tmp);
++
++	return val;
++}
++
+ void
+ Init_rpm_spec(void)
+ {
+@@ -309,6 +333,7 @@
+ 	rb_define_method(rpm_cSpec, "sources", rpm_spec_get_sources, 0);
+ 	rb_define_method(rpm_cSpec, "packages", rpm_spec_get_packages, 0);
+ 	rb_define_method(rpm_cSpec, "build", rpm_spec_build, -1);
++	rb_define_method(rpm_cSpec, "expand_macros", rpm_spec_expand_macros, 1);
+ 	rb_undef_method(rpm_cSpec, "dup");
+ 	rb_undef_method(rpm_cSpec, "clone");
+ 

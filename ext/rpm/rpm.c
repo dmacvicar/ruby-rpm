@@ -11,6 +11,12 @@
 VALUE rpm_mRPM;
 
 static VALUE
+m_expand(VALUE m, VALUE name)
+{
+	return rb_str_new2(rpmExpand(StringValueCStr(name), NULL));
+}
+
+static VALUE
 m_aref(VALUE m, VALUE name)
 {
 	char  buf[BUFSIZ];
@@ -604,6 +610,7 @@ Init_rpmmodule(void)
 	DEF_MIRE(GLOB);
 #undef DEF_MIRE
 
+	rb_define_module_function(rpm_mRPM, "expand", m_expand, 1);
 	rb_define_module_function(rpm_mRPM, "[]", m_aref, 1);
 	rb_define_module_function(rpm_mRPM, "[]=", m_aset, 2);
 	rb_define_module_function(rpm_mRPM, "readrc", m_readrc, -1);

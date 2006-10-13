@@ -294,6 +294,30 @@ rpm_spec_build(int argc, VALUE* argv, VALUE spec)
 	return INT2NUM(rc);
 }
 
+VALUE
+rpm_spec_expand_macros(VALUE spec, VALUE name)
+{
+	char  buf[BUFSIZ];
+	char* tmp;
+	VALUE val;
+
+	if (TYPE(name) != T_STRING) {
+		rb_raise(rb_eTypeError, "illegal argument type");
+	}
+
+	sprintf(buf, "%%{%s}", RSTRING(name)->ptr);
+	tmp = strdup(buf);
+	expandMacros(RPM_SPEC(spec), RPM_SPEC(spec)->macros, buf, BUFSIZ);
+	if (strcmp(tmp, buf) == 0) {
+		val = Qnil;
+	} else {
+		val = rb_str_new2(buf);
+	}
+	free(tmp);
+
+	return val;
+}
+
 void
 Init_rpm_spec(void)
 {
@@ -309,6 +333,7 @@ Init_rpm_spec(void)
 	rb_define_method(rpm_cSpec, "sources", rpm_spec_get_sources, 0);
 	rb_define_method(rpm_cSpec, "packages", rpm_spec_get_packages, 0);
 	rb_define_method(rpm_cSpec, "build", rpm_spec_build, -1);
+	rb_define_method(rpm_cSpec, "expand_macros", rpm_spec_expand_macros, 1);
 	rb_undef_method(rpm_cSpec, "dup");
 	rb_undef_method(rpm_cSpec, "clone");
 
