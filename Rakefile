@@ -18,7 +18,7 @@ PKG_FILES = FileList[
   "install.rb",
   "doc/refm.rd.ja",
   "lib/**/*.rb",
-  "ext/**/*.[ch]", "ext/**/MANIFEST",
+  "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
   "tests/**/*"
 ]
 
