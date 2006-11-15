@@ -291,10 +291,9 @@ transaction_commit(VALUE tag, VALUE ts)
 VALUE
 rpm_db_transaction(int argc, VALUE* argv, VALUE db)
 {
-	VALUE trans, problist;
+	VALUE trans;
 	rpm_trans_t* ts;
 	const char* root = "/";
-	VALUE ret;
 
 #if 0
 	if (OBJ_FROZEN(db)) {
