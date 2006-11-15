@@ -1,3 +1,7 @@
+2006-10-13  David Lutterkort  <dlutter@redhat.com>
+
+	* doc/patches: apply patches pulled from SuSe and MDK rpms
+
 2004-06-05  Kazuhiko  <kazuhiko@fdiary.net>
 
 	* ext/rpm/db.c (rpm_transaction_check): initial value of 'evr' =
