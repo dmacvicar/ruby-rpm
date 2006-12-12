@@ -19,7 +19,8 @@ PKG_FILES = FileList[
   "doc/refm.rd.ja",
   "lib/**/*.rb",
   "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
-  "tests/**/*"
+  "tests/**/*",
+  "spec/*"
 ]
 
 Rake::PackageTask.new("package") do |p|
