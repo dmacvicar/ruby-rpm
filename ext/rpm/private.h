@@ -19,7 +19,13 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+/* Looks missing in rpmds.h */
+#include <sys/utsname.h>
 #include <unistd.h>
+
+/* To get structure definitions */ 
+#define _RPMDB_INTERNAL 
+#define _RPMPS_INTERNAL
 
 #include <rpm/rpmcli.h>
 #include <rpm/rpmlib.h>
