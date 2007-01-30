@@ -311,7 +311,7 @@ rpm_version_inspect(VALUE ver)
 	e = rb_ivar_get(ver, id_e);
 
 	if (!NIL_P(e)) {
-		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%d>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, RSTRING(rb_inspect(e))->ptr);
+		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%d>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, NUM2INT(e));
         } else {
 		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr);
 	}

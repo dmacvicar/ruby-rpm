@@ -42,4 +42,10 @@ class RPM_Version_Tests < Test::Unit::TestCase
     assert_equal( '0.9.0-1m', @b.to_vre )
     assert_equal( '1:0.9.0-1m', @d.to_vre )
   end
+
+  def test_inspect
+      v = RPM::Version.new("1", "2", 3)
+      assert_equal(3, v.e)
+      assert_equal('#<RPM::Version v="1", r="2", e=3>', v.inspect)
+  end
 end
