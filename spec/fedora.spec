@@ -6,14 +6,14 @@ Name: ruby-rpm
 
 Version: 1.2.1
 Release: 1%{?dist}
-Group: Development/Ruby
+Group: Development/Languages
 License: GPL
 URL: http://rubyforge.org/projects/ruby-rpm/
 Source0: %{name}-%{version}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: ruby >= 1.8.2
-BuildRequires: ruby >= 1.8.2
-BuildRequires: ruby-devel >= 1.8.2
+Requires: ruby >= 1.8.1
+BuildRequires: ruby >= 1.8.1
+BuildRequires: ruby-devel >= 1.8.1
 BuildRequires: rpm-devel >= 4.2.1
 BuildRequires: db4-devel
 
