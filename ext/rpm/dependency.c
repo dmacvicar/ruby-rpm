@@ -163,17 +163,17 @@ VALUE
 rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 {
 	int oflag;
+    int sflag;
 	char *svre;
 	char *ovre;
 	char *name;
+    char *oname;
 	if (rb_obj_is_kind_of(other,rpm_cPackage) == Qtrue){
 		VALUE provide;
 		VALUE provides = rpm_package_get_provides(other);
 		while (!NIL_P(provide = rb_ary_pop(provides))){
-			if (rb_str_cmp(rb_ivar_get(dep,id_name),rb_ivar_get(provide,id_name)) == 0){
-				VALUE sense = rpm_dependency_is_satisfy(dep,provide);
-				if (sense == Qtrue)
-					return Qtrue;
+            if (rpm_dependency_is_satisfy(dep,provide) == Qtrue) {
+                return Qtrue;
 			}
 		}
 		return Qfalse;
@@ -181,13 +181,16 @@ rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 
 	name = RSTRING(rb_ivar_get(dep,id_name))->ptr;
 	svre = RSTRING(rpm_version_to_vre(rb_ivar_get(dep,id_ver)))->ptr;
+    sflag = NUM2INT(rb_ivar_get(dep, id_flags));
 
 	if (rb_obj_is_kind_of(other,rpm_cDependency) == Qtrue){
 		oflag = NUM2INT(rb_ivar_get(other, id_flags));
+        oname = RSTRING(rb_ivar_get(other, id_name))->ptr;
 		ovre = RSTRING(rpm_version_to_vre(rb_ivar_get(other,id_ver)))->ptr;
 		other = rb_ivar_get(other,id_ver);
 	} else if (rb_obj_is_kind_of(other,rpm_cVersion) == Qtrue){
 		ovre = RSTRING(rpm_version_to_vre(other))->ptr;
+        oname = name;
 		if (!*ovre)
 			oflag = 0;
 		else
@@ -197,11 +200,10 @@ rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 	}
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
-	if (rpmRangesOverlap(name,ovre,oflag,
-			     name,svre,NUM2INT(rb_ivar_get(dep, id_flags))))
+	if (rpmRangesOverlap(name,ovre,oflag, sname,svre,sflag))
 #else
-	if (rpmdsCompare(rpmdsSingle(RPMTAG_PROVIDENAME, name, ovre, oflag),
-			 rpmdsSingle(RPMTAG_PROVIDENAME, name, svre, NUM2INT(rb_ivar_get(dep, id_flags)))))
+	if (rpmdsCompare(rpmdsSingle(RPMTAG_PROVIDENAME, oname, ovre, oflag),
+			 rpmdsSingle(RPMTAG_PROVIDENAME, name, svre, sflag)))
 #endif
 		return Qtrue;
 	return Qfalse;
