@@ -19,7 +19,7 @@ Install
     $ ruby install.rb config
     $ ruby install.rb setup
     $ su
-    # ruby setup.rb install
+    # ruby install.rb install
     
   You can also install files into your favorite directory
   by supplying install.rb some options. Try "ruby setup.rb --help".
