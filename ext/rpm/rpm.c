@@ -516,7 +516,10 @@ Init_rpmmodule(void)
 #else
 	DEF_TRANS_FLAG(ANACONDA);
 #endif
+/* NOMD5 is not in jbj's 4.4.6 any more - Mandriva uses that */
+#ifdef RPMTRANS_FLAG_NOMD5
 	DEF_TRANS_FLAG(NOMD5);
+#endif
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
 	DEF_TRANS_FLAG(NOSUGGEST);
 	DEF_TRANS_FLAG(ADDINDEPS);
