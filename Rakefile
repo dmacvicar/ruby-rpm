@@ -63,7 +63,7 @@ PKG_FILES = FileList[
   "lib/**/*.rb",
   "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
   "tests/**/*",
-  "spec/*"
+  "spec/**/*"
 ]
 
 SPEC = Gem::Specification.new do |s|
