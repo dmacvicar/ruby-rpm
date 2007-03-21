@@ -18,7 +18,10 @@ BuildRequires: rpm-devel >= 4.2.1
 BuildRequires: db4-devel
 
 %description
-Bindings for accessing RPM packages and databases from Ruby.
+Provides bindings for accessing RPM packages and databases from Ruby. It
+includes the low-level C API to talk to rpm as well as Ruby classes to
+model the various objects that RPM deals with (such as packages,
+dependencies, and files).
 
 %prep
 %setup -q

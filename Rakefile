@@ -78,12 +78,16 @@ SPEC = Gem::Specification.new do |s|
     s.required_ruby_version = '>= 1.8.1'
     s.extensions = "ext/rpm/extconf.rb"
     s.description = <<EOF
-Bindings for accessing RPM packages and databases from Ruby.
+Provides bindings for accessing RPM packages and databases from Ruby. It
+includes the low-level C API to talk to rpm as well as Ruby classes to
+model the various objects that RPM deals with (such as packages,
+dependencies, and files).
 EOF
 end
 
 Rake::GemPackageTask.new(SPEC) do |pkg|
     pkg.need_tar = true
+    pkg.need_zip = true
 end
 
 desc "Build (S)RPM for #{PKG_NAME}"
@@ -101,7 +105,7 @@ end
 desc "Release a version"
 task :dist => [ :rpm, :test ] do |t|
     puts "svn commit -m 'Release #{PKG_VERSION}' #{SPEC_FILE}"
-    puts "svn cp svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/trunk svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/tags/release-#{PKG_VERSION}"
+    puts "svn cp -m 'Tag release #{PKG_VERSION}' svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/trunk svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/tags/release-#{PKG_VERSION}"
     puts "Upload files"
     puts "Announce on rubyforge and freshmeat"
 end
