@@ -100,8 +100,8 @@ end
 
 desc "Release a version"
 task :dist => [ :rpm, :test ] do |t|
-    # Commit changed specfile
-    # svn cp svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/trunk svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/tags/release-#{PKG_VERSION}
-    # Upload files
-    # Announce on rubyforge and freshmeat
+    puts "svn commit -m 'Release #{PKG_VERSION}' #{SPEC_FILE}"
+    puts "svn cp svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/trunk svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/tags/release-#{PKG_VERSION}"
+    puts "Upload files"
+    puts "Announce on rubyforge and freshmeat"
 end
