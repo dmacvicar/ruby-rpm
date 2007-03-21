@@ -4,7 +4,7 @@
 Summary: Ruby bindings for RPM
 Name: ruby-rpm
 
-Version: 1.2.1
+Version: 1.2.2
 Release: 1%{?dist}
 Group: Development/Languages
 License: GPL
@@ -47,7 +47,7 @@ chmod 0755 %{buildroot}%{ruby_sitearch}/rpmmodule.so
 
 %files
 %defattr(-, root, root)
-%doc README COPYING ChangeLog doc
+%doc NEWS README COPYING ChangeLog doc
 %{ruby_sitelib}/rpm.rb
 %{ruby_sitearch}/rpmmodule.so
 

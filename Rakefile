@@ -57,7 +57,7 @@ task :test => :build
 #
 
 PKG_FILES = FileList[
-  "Rakefile", "ChangeLog", "COPYING", "README", 
+  "Rakefile", "ChangeLog", "COPYING", "README", "NEWS",
   "install.rb",
   "doc/refm.rd.ja",
   "lib/**/*.rb",
