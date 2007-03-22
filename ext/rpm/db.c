@@ -200,7 +200,8 @@ rpm_db_close(VALUE db)
 {
 	db_unref((rpm_db_t*)DATA_PTR(db));
 	DATA_PTR(db) = NULL;
-        return Qnil;
+    rb_gc();
+    return Qnil;
 }
 
 VALUE
