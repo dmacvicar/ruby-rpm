@@ -55,5 +55,6 @@ class RPM_Version_Tests < Test::Unit::TestCase
       assert_equal(nil, v1.e)
       assert_equal(0, v2.e)
       assert( v1 == v2 )
+      assert_equal(v1.hash, v2.hash)
   end
 end

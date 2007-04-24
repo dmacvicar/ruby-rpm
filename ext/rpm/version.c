@@ -319,6 +319,21 @@ rpm_version_inspect(VALUE ver)
 	return rb_str_new2(buf);
 }
 
+VALUE
+rpm_version_hash(VALUE ver)
+{
+    long h;
+    VALUE v, r, e;
+	v = rb_ivar_get(ver, id_v);
+	r = rb_ivar_get(ver, id_r);
+	e = rb_ivar_get(ver, id_e);
+    
+    h = NIL_P(e) ? 0 : NUM2INT(e);
+    h = (h << 1) ^ NUM2LONG(rb_hash(r));
+    h = (h << 1) ^ NUM2LONG(rb_hash(v));
+    return LONG2FIX(h);
+}
+
 void
 Init_rpm_version(void)
 {
@@ -334,6 +349,7 @@ Init_rpm_version(void)
 	rb_define_method(rpm_cVersion, "to_s", rpm_version_to_s, 0);
 	rb_define_method(rpm_cVersion, "to_vre", rpm_version_to_vre, 0);
 	rb_define_method(rpm_cVersion, "inspect", rpm_version_inspect, 0);
+    rb_define_method(rpm_cVersion, "hash", rpm_version_hash, 0);
 
 	id_v = rb_intern("version");
 	id_r = rb_intern("release");
