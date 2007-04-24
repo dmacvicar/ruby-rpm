@@ -198,9 +198,9 @@ rpm_version_cmp(VALUE ver, VALUE other)
 
 	ve = rb_ivar_get(ver,id_e);
 	oe = rb_ivar_get(other,id_e);
-	if (!NIL_P(ve) && NIL_P(oe))
+	if (!NIL_P(ve) && NUM2INT(ve) > 0 && NIL_P(oe))
 		return INT2FIX(1);
-	else if (NIL_P(ve) && !NIL_P(oe))
+	else if (NIL_P(ve) && !NIL_P(oe) && NUM2INT(oe) > 0)
 		return INT2FIX(-1);
 	else if (!NIL_P(ve) && !NIL_P(oe)) {
 		if (NUM2INT(ve) < NUM2INT(oe))
