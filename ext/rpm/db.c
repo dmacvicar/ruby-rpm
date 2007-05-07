@@ -975,6 +975,8 @@ rpm_db_init_iterator(VALUE db, VALUE key, VALUE val)
 		return Data_Wrap_Struct(rpm_cMatchIterator, NULL, mi_free, mi);
 	}
 	free(mi);
+    /* FIXME: returning nil here is a pain; for ruby, it would be nicer
+       to return an empty array */
 	return Qnil;
 }
 
