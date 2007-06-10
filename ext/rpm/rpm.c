@@ -510,7 +510,9 @@ Init_rpm(void)
 	DEF_TRANS_FLAG(PKGUNDO);
 	DEF_TRANS_FLAG(COMMIT);
 	DEF_TRANS_FLAG(UNDO);
+#if RPM_VERSION_CODE < RPM_VERSION(4,4,8)
 	DEF_TRANS_FLAG(REVERSE);
+#endif
 	DEF_TRANS_FLAG(NOTRIGGERPREIN);
 	DEF_TRANS_FLAG(NOPRE);
 	DEF_TRANS_FLAG(NOPOST);
@@ -523,7 +525,7 @@ Init_rpm(void)
 	DEF_TRANS_FLAG(APPLYONLY);
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	DEF_TRANS_FLAG(CHAINSAW);
-#elif RPM_VERSION_CODE < RPM_VERSION(4,5,90)
+#elif RPM_VERSION_CODE < RPM_VERSION(4,4,8)
 	DEF_TRANS_FLAG(ANACONDA);
 #endif
 /* NOMD5 is not in jbj's 4.4.6 any more - Mandriva uses that */
@@ -531,9 +533,11 @@ Init_rpm(void)
 	DEF_TRANS_FLAG(NOMD5);
 #endif
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
+#if RPM_VERSION(4,4,8) < RPM_VERSION_CODE
 	DEF_TRANS_FLAG(NOSUGGEST);
 	DEF_TRANS_FLAG(ADDINDEPS);
 	DEF_TRANS_FLAG(NOCONFIGS);
+#endif
 #endif
 #undef DEF_TRANS_FLAG
 
@@ -650,6 +654,11 @@ Init_rpm(void)
 	rb_gc_register_address(&ruby_rpm_temp_format);
 
 	rpmReadConfigFiles(NULL, NULL);
+
+#if RPM_VERSION_CODE >= RPM_VERSION(4,4,8)
+	rpmInitMacros(NULL, rpmMacrofiles);
+#else
 	rpmInitMacros(NULL, macrofiles);
+#endif
 	rpmSetVerbosity(RPMLOG_EMERG);
 }

@@ -85,6 +85,9 @@ rpm_spec_get_buildroot(VALUE spec)
 	if (RPM_SPEC(spec)->buildRoot) {
 		return rb_str_new2(RPM_SPEC(spec)->buildRoot);
 	}
+#elif RPM_VERSION_CODE >= RPM_VERSION(4,4,8)
+	if (RPM_SPEC(spec)->rootURL) {
+		return rb_str_new2(RPM_SPEC(spec)->rootURL);
 #else
 	if (RPM_SPEC(spec)->buildRootURL) {
 		return rb_str_new2(RPM_SPEC(spec)->buildRootURL);
