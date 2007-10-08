@@ -1,3 +1,9 @@
+1.2.3: 2007-05-07
+  - Make RPM::Version hashable (r42)
+  - Treat zero epoch the same as no epoch in RPM::Version::<=> (r41)
+  - Force GC on close of RPM db to make sure garbage objects don't keep
+    db open
+
 1.2.2: 2007-03-21
   - Fix Dependency.satisfy? and add tests/test_dependency.rb (r25)
   - Fix segfault when RPM::File.new is called with link_to = nil (r24)
