@@ -23,6 +23,10 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#if RPM_VERSION(5,0,0) <= RPM_VERSION_CODE
+#include <rpm4compat.h>
+#endif
+
 /* To get structure definitions */ 
 #define _RPMDB_INTERNAL 
 #define _RPMPS_INTERNAL
@@ -34,7 +38,9 @@
 #if HAVE_RPM_RPMLOG_H
 #  include <rpm/rpmlog.h>
 #else
+# if RPM_VERSION(5,0,0) > RPM_VERSION_CODE
 #  include <rpm/rpmmessages.h>
+# endif
 #endif
 #if HAVE_RPM_RPMTS_H
 #  include <rpm/rpmts.h>

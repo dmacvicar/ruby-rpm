@@ -59,7 +59,11 @@ spec_s_open(VALUE klass, VALUE filename)
 	return Data_Wrap_Struct(klass, NULL, spec_free, rspec);
 #else
 	ts = rpmtsCreate();
+#if RPM_VERSION_CODE >= RPM_VERSION(4,4,8)
+	switch (parseSpec(ts, RSTRING_PTR(filename), "/", 0, "", NULL, 1, 1, 0)) {
+#else
 	switch (parseSpec(ts, RSTRING_PTR(filename), "/", NULL, 0, "", NULL, 1, 1)) {
+#endif
 	case 0:
 		if (ts != NULL) {
 			break;

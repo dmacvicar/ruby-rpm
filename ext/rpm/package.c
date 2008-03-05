@@ -379,7 +379,9 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 		val = rb_str_new(data, count);
 		break;
 
+#if RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 	case RPM_CHAR_TYPE:
+#endif
 	case RPM_INT8_TYPE:
 		if (count == 1 && !ary_p) {
 			val = INT2NUM(*(int_8*)data);
