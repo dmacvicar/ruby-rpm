@@ -1,21 +1,30 @@
 %{!?ruby_sitelib: %define ruby_sitelib %(ruby -rrbconfig -e "puts Config::CONFIG['sitelibdir']")}
 %{!?ruby_sitearch: %define ruby_sitearch %(ruby -rrbconfig -e "puts Config::CONFIG['sitearchdir']")}
 
+%define has_ruby_abi 0%{?fedora:%fedora} >= 5 || 0%{?rhel:%rhel} >= 5
+
 Summary: Ruby bindings for RPM
 Name: ruby-rpm
 
 Version: 1.2.3
-Release: 1%{?dist}
+Release: 3%{?dist}
 Group: Development/Languages
-License: GPL
+License: GPLv2+
 URL: http://rubyforge.org/projects/ruby-rpm/
-Source0: %{name}-%{version}.tgz
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: ruby >= 1.8.1
-BuildRequires: ruby >= 1.8.1
-BuildRequires: ruby-devel >= 1.8.1
+Source0: http://rubyforge.org/frs/download.php/26403/%{name}-1.2.3.tgz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+%if %has_ruby_abi
+Requires: ruby(abi) = 1.8
+BuildRequires: ruby(abi) = 1.8
+%endif
+Provides: ruby(rpm) = %version
+BuildRequires: ruby ruby-devel
 BuildRequires: rpm-devel >= 4.2.1
 BuildRequires: db4-devel
+# In popt before F8, in popt-devel for F8 and later
+%if 0%{?fedora:%fedora} >= 8
+BuildRequires: popt-devel
+%endif
 
 %description
 Provides bindings for accessing RPM packages and databases from Ruby. It
@@ -36,7 +45,7 @@ ruby install.rb config \
 ruby install.rb setup
 
 %install
-[ "%{buildroot}" != "/" ] && %__rm -rf %{buildroot}
+rm -rf %{buildroot}
 ruby install.rb config \
     --bin-dir=%{buildroot}%{_bindir} \
     --rb-dir=%{buildroot}%{ruby_sitelib} \
@@ -46,15 +55,21 @@ ruby install.rb install
 chmod 0755 %{buildroot}%{ruby_sitearch}/rpmmodule.so
 
 %clean
-[ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
+rm -rf %{buildroot}
 
 %files
-%defattr(-, root, root)
+%defattr(-, root, root,-)
 %doc NEWS README COPYING ChangeLog doc
 %{ruby_sitelib}/rpm.rb
 %{ruby_sitearch}/rpmmodule.so
 
 %changelog
+* Fri Oct 19 2007 David Lutterkort <dlutter@redhat.com> - 1.2.3-3
+- Fix BR on popt-devel
+
+* Mon Oct  8 2007 David Lutterkort <dlutter@redhat.com> - 1.2.3-2
+- Bring in agreement with Fedora guidelines
+
 * Tue Nov 14 2006 David Lutterkort <dlutter@redhat.com> - 1.2.1-1
 - Adapted for Fedora
 
