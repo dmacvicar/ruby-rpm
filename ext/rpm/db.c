@@ -922,6 +922,20 @@ rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 
 	{
 	VALUE list = rb_ary_new();
+#ifdef RPMPS_OPAQUE
+	rpmpsi psi = rpmpsInitIterator(ps);
+	while (rpmpsNextIterator(psi) >= 0) {
+		rpmProblem p = rpmpsGetProblem(psi);
+		VALUE prb = rb_struct_new(rpm_sProblem,
+					INT2NUM(rpmProblemGetType(p)),
+					(VALUE)rpmProblemGetKey(p),
+					package_new_from_NEVR(
+						rpmProblemGetAltNEVR(p)+2
+					),
+					rb_str_new2(rpmProblemString(p)));
+		rb_ary_push(list, prb);
+	}
+#else
 	if (ps != NULL && rpmpsNumProblems(ps) > 0) {
 		register int i;
 
@@ -937,6 +951,7 @@ rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 			rb_ary_push(list, prb);
 		}
 	}
+#endif
 	rb_ivar_set(trans, id_pl, list);
 	}
 	if (ps) ps = rpmpsFree(ps);

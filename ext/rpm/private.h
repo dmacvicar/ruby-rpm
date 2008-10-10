@@ -55,6 +55,7 @@
 
 #if RPM_VERSION_CODE >= RPM_VERSION(4,5,90)
 #define RPMDB_OPAQUE 1
+#define RPMPS_OPAQUE 1
 #else
 #define RPMTS_AVAILABLE 1
 #endif
