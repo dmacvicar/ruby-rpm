@@ -218,6 +218,7 @@ check_closed(VALUE db)
 	}
 }
 
+#ifndef RPMDB_OPAQUE
 VALUE
 rpm_db_get_root(VALUE db)
 {
@@ -231,6 +232,7 @@ rpm_db_get_home(VALUE db)
 	check_closed(db);
 	return rb_str_new2(RPM_DB(db)->db_home);
 }
+#endif
 
 VALUE
 rpm_db_is_writable(VALUE db)
@@ -430,6 +432,7 @@ rpm_transaction_upgrade(VALUE trans, VALUE pkg, VALUE key)
 	return Qnil;
 }
 
+#ifdef RPMTS_AVAILABLE
 VALUE
 rpm_transaction_available(VALUE trans, VALUE pkg, VALUE key)
 {
@@ -460,6 +463,7 @@ rpm_transaction_available(VALUE trans, VALUE pkg, VALUE key)
 
 	return Qnil;
 }
+#endif /* RPMTS_AVAILABLE */
 
 VALUE
 rpm_transaction_delete(VALUE trans, VALUE pkg)
@@ -1058,8 +1062,10 @@ Init_rpm_DB(void)
 	rb_define_singleton_method(rpm_cDB, "rebuild", db_s_rebuild, -1);
 	rb_define_method(rpm_cDB, "close", rpm_db_close, 0);
 	rb_define_method(rpm_cDB, "closed?", rpm_db_is_closed, 0);
+#ifndef RPMDB_OPAQUE
 	rb_define_method(rpm_cDB, "root", rpm_db_get_root, 0);
 	rb_define_method(rpm_cDB, "home", rpm_db_get_home, 0);
+#endif
 	rb_define_method(rpm_cDB, "writable?", rpm_db_is_writable, 0);
 	rb_define_method(rpm_cDB, "each_match", rpm_db_each_match, 2);
 	rb_define_method(rpm_cDB, "each", rpm_db_each, 0);
@@ -1095,7 +1101,9 @@ Init_rpm_transaction(void)
 	rb_define_method(rpm_cTransaction, "script_file=", rpm_transaction_set_script_file, 1);
 	rb_define_method(rpm_cTransaction, "install", rpm_transaction_install, 2);
 	rb_define_method(rpm_cTransaction, "upgrade", rpm_transaction_upgrade, 2);
+#ifdef RPMTS_AVAILABLE
 	rb_define_method(rpm_cTransaction, "available", rpm_transaction_available, 2);
+#endif
 	rb_define_method(rpm_cTransaction, "delete", rpm_transaction_delete, 1);
 	rb_define_method(rpm_cTransaction, "check", rpm_transaction_check, 0);
 	rb_define_method(rpm_cTransaction, "order", rpm_transaction_order, 0);
