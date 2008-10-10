@@ -508,6 +508,7 @@ rpm_transaction_delete(VALUE trans, VALUE pkg)
 
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
 
+#if 0 /* XXX this shouldn't be needed at all */
 /* from rpm-4.2.1/lib/rpmps.c */
 static int
 sameProblem(const rpmProblem p1, const rpmProblem p2)
@@ -528,6 +529,7 @@ sameProblem(const rpmProblem p1, const rpmProblem p2)
 	
     return 0;
 }
+#endif
 
 static VALUE
 version_new_from_EVR(const char* evr)
@@ -643,6 +645,8 @@ rpm_transaction_check(VALUE trans)
 
 	rc = rpmtsCheck(RPM_TRANSACTION(trans));
 	ps = rpmtsProblems(RPM_TRANSACTION(trans));
+	/* get rid of duplicate problems */
+	rpmpsTrim(ps, RPMPROB_FILTER_NONE);
 	num = rpmpsNumProblems(ps);
 
 	if (ps != NULL && 0 < num) {
@@ -661,6 +665,7 @@ rpm_transaction_check(VALUE trans)
 			if (p->ignoreProblem)
 				continue;
 
+#if 0 /* XXX shouldn't be needed at all due to rpmpsTrim() */
 			/* Filter already appended problems. */
 			for (j = 0; j < i; j++) {
 				if (!sameProblem(p, ps->probs + j))
@@ -668,6 +673,7 @@ rpm_transaction_check(VALUE trans)
 			}
 			if (j < i)
 				continue;
+#endif
 
 			if ( p->type == RPMPROB_REQUIRES ) {
 				char *buf = strdup ( altNEVR );
