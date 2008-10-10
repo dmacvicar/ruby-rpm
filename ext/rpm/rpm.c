@@ -204,6 +204,7 @@ Init_rpmmodule(void)
 	DEF_LOG(DEBUG);
 #undef DEF_LOG
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,5,90)
 #define DEF_MESS(name) \
 	rb_define_const(rpm_mRPM, "MESS_"#name, INT2NUM(RPMMESS_##name))
 	DEF_MESS(DEBUG);
@@ -214,6 +215,7 @@ Init_rpmmodule(void)
 	DEF_MESS(FATALERROR);
 	DEF_MESS(QUIET);
 #undef DEF_MESS
+#endif
 
 #define DEFINE_DBI(name) \
 	rb_define_const(rpm_mRPM, "DBI_"#name, INT2NUM(RPMDBI_##name))
@@ -400,7 +402,9 @@ Init_rpmmodule(void)
 #define DEFINE_SENSE(name) \
 	rb_define_const(rpm_mRPM, "SENSE_"#name, INT2NUM(RPMSENSE_##name))
 	DEFINE_SENSE(ANY);
+#if RPM_VERSION_CODE < RPM_VERSION(4,5,90)
 	DEFINE_SENSE(SERIAL);
+#endif
 	DEFINE_SENSE(LESS);
 	DEFINE_SENSE(GREATER);
 	DEFINE_SENSE(EQUAL);
@@ -453,7 +457,9 @@ Init_rpmmodule(void)
 	DEF_PROB(OLDPACKAGE);
 	DEF_PROB(DISKSPACE);
 	DEF_PROB(DISKNODES);
+#if RPM_VERSION_CODE < RPM_VERSION(4,5,90)
 	DEF_PROB(BADPRETRANS);
+#endif
 #undef DEF_PROB
 
 #define DEF_CALLBACK(name) \
@@ -513,7 +519,7 @@ Init_rpmmodule(void)
 	DEF_TRANS_FLAG(APPLYONLY);
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	DEF_TRANS_FLAG(CHAINSAW);
-#else
+#elif RPM_VERSION_CODE < RPM_VERSION(4,5,90)
 	DEF_TRANS_FLAG(ANACONDA);
 #endif
 /* NOMD5 is not in jbj's 4.4.6 any more - Mandriva uses that */
