@@ -649,6 +649,60 @@ rpm_transaction_check(VALUE trans)
 	rpmpsTrim(ps, RPMPROB_FILTER_NONE);
 	num = rpmpsNumProblems(ps);
 
+#ifdef RPMPS_OPAQUE
+	rpmpsi psi = rpmpsInitIterator(ps);
+	if (num > 0) {
+		list = rb_ary_new();
+	}
+	while (rpmpsNextIterator(psi) >= 0) {
+		rpmProblem p = rpmpsGetProblem(psi);
+		VALUE dep;
+		switch (rpmProblemGetType(p)) {
+		case RPMPROB_REQUIRES: {
+			char *buf = strdup (rpmProblemGetAltNEVR(p));
+			/* TODO: zaki: NULL check*/
+			char *end;
+
+			char *name = buf+2;
+			char *relation = NULL;
+			char *evr = "";
+			rpmsenseFlags sense_flags = 0;
+
+			end = strchr ( name, ' ');
+			if ( end ) {
+				*end = '\0';
+				relation = end + 1;
+				end = strchr ( relation, ' ');
+				if ( end ) {
+					*end = '\0';
+					evr = end + 1;
+				}
+				for ( ; (*relation) != '\0'; relation++ ) {
+					if ( (*relation) == '=' ) {
+						sense_flags |= RPMSENSE_EQUAL;
+					} else if ( (*relation) == '>' ) {
+						sense_flags |= RPMSENSE_GREATER;
+					} else if ( (*relation), '<' ) {
+						sense_flags |= RPMSENSE_LESS;
+					}
+				}
+			}
+
+			dep = rpm_require_new(name,
+					  rpm_version_new(evr),
+					  sense_flags,
+					  package_new_from_NEVR(
+						rpmProblemGetPkgNEVR(p)
+					  ));
+			free ( buf );
+			rb_ary_push(list, dep);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+#else
 	if (ps != NULL && 0 < num) {
 		rpmProblem p;
 		int i;
@@ -735,6 +789,7 @@ rpm_transaction_check(VALUE trans)
 #endif
         }
 	}
+#endif /* RPMPS_OPAQUE */
 	ps = rpmpsFree(ps);
 		
 	return list;
