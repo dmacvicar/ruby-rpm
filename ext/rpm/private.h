@@ -24,7 +24,11 @@
 #include <rpmlib.h>
 #include <rpmdb.h>
 #include <rpmbuild.h>
+#if RPM_VERSION(4,5,90) >= RPM_VERSION_CODE
+#include <rpmlog.h>
+#else
 #include <rpmmessages.h>
+#endif
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
 #include <rpmts.h>
 #include <rpmps.h>
