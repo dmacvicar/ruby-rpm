@@ -53,7 +53,6 @@ spec_s_open(VALUE klass, VALUE filename)
 			break;
 		}
 
-	case RPMERR_BADSPEC:
 	default:
 		rb_raise(rb_eRuntimeError, "specfile `%s' parsing failed", RSTRING(filename)->ptr);
 	}
@@ -66,7 +65,6 @@ spec_s_open(VALUE klass, VALUE filename)
 			break;
 		}
 
-	case RPMERR_BADSPEC:
 	default:
 		rb_raise(rb_eRuntimeError, "specfile `%s' parsing failed", RSTRING(filename)->ptr);
 	}
@@ -83,9 +81,15 @@ rpm_spec_open(const char* filename)
 VALUE
 rpm_spec_get_buildroot(VALUE spec)
 {
+#if RPM_VERSION_CODE >= RPM_VERSION(4,5,90)
+	if (RPM_SPEC(spec)->buildRoot) {
+		return rb_str_new2(RPM_SPEC(spec)->buildRoot);
+	}
+#else
 	if (RPM_SPEC(spec)->buildRootURL) {
 		return rb_str_new2(RPM_SPEC(spec)->buildRootURL);
 	}
+#endif
 	return Qnil;
 }
 
