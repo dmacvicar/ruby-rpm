@@ -39,6 +39,11 @@ end
 
 def check_rpm
   return false unless check_db
+  # Newer rpm supports pkg-config. If detected, compat mode for now...
+  if pkg_config('rpm') then
+     $CFLAGS="#{$CFLAGS} -D_RPM_4_4_COMPAT"
+     return true
+  end
   $libs = append_library($libs, 'rpmdb')
   $libs = append_library($libs, 'rpm')
   if have_header('rpmlib.h') and
