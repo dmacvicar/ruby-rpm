@@ -78,6 +78,9 @@ exit unless check_rpm_version
 
 check_debug
 
+$CFLAGS="#{$CFLAGS} -Werror"
+
 system 'gcc -MM *.c >depend 2>/dev/null'
 
+create_header
 create_makefile('rpmmodule')
