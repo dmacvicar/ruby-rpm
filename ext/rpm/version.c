@@ -304,7 +304,6 @@ VALUE
 rpm_version_inspect(VALUE ver)
 {
 	char buf[BUFSIZ];
-	char *p = buf;
 	VALUE v, r, e;
 	v = rb_ivar_get(ver, id_v);
 	r = rb_ivar_get(ver, id_r);

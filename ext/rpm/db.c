@@ -286,7 +286,7 @@ static VALUE
 transaction_commit(VALUE tag, VALUE ts)
 {
 	rpm_transaction_commit(0, NULL, ts);
-	
+
 	/* not reached because rpm_transaction_commit() always call rb_throw() */
 	return Qnil;
 }
@@ -457,8 +457,11 @@ rpm_transaction_available(VALUE trans, VALUE pkg, VALUE key)
 	rpmtransAvailablePackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
 					   RSTRING(key)->ptr);
 #else
-	rpmtsAvailablePackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
-					   RSTRING(key)->ptr);
+    rb_raise(rb_eNotImpError, "need rpmtsAvailablePackage");
+    // FIXME: What is the analog for rpmtsAvailablePackage
+    // in newer RPM's ?
+    //rpmtsAvailablePackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
+    //                      RSTRING(key)->ptr);
 #endif
 
 	return Qnil;
@@ -472,7 +475,7 @@ rpm_transaction_delete(VALUE trans, VALUE pkg)
 	VALUE mi;
 
 	db = rb_ivar_get(trans, id_db);
-	
+
 	if (TYPE(pkg) == T_STRING)
 		mi = rpm_db_init_iterator(db, INT2NUM(RPMDBI_LABEL), pkg);
 	else if (rb_obj_is_kind_of(pkg, rpm_cPackage) != Qfalse) {
@@ -483,9 +486,8 @@ rpm_transaction_delete(VALUE trans, VALUE pkg)
 			VALUE name = rpm_package_aref(pkg,INT2NUM(RPMDBI_LABEL));
 			mi = rpm_db_init_iterator(db, INT2NUM(RPMDBI_LABEL), name);
 		}
-	} else if ( rb_obj_is_kind_of(pkg, rpm_cDependency) ==Qfalse && 
+	} else if ( rb_obj_is_kind_of(pkg, rpm_cDependency) ==Qfalse &&
                     rb_respond_to(pkg,rb_intern("name")) && rb_respond_to(pkg,rb_intern("version"))){
-		VALUE name = rb_funcall(pkg,rb_intern("name"),0);
 		mi = rpm_db_init_iterator(db, INT2NUM(RPMDBI_LABEL),rb_funcall(pkg,rb_intern("name"),0));
 		rpm_mi_set_iterator_version(mi,rb_funcall(pkg,rb_intern("version"),0));
 	} else
@@ -526,7 +528,7 @@ sameProblem(const rpmProblem p1, const rpmProblem p2)
 			return 1;
     if (p1->ulong1 != p2->ulong1)
 		return 1;
-	
+
     return 0;
 }
 #endif
@@ -539,12 +541,12 @@ version_new_from_EVR(const char* evr)
 	char *end = NULL;
 	char *tmp_evr = NULL;
 	VALUE version = Qnil;
-	
+
 	tmp_evr = strdup(evr);
 	if (tmp_evr==NULL) { return Qnil; }
 
 	e = tmp_evr;
-	if ( end=strchr(e, ':') ) {
+	if ( (end=strchr(e, ':')) ) {
 		/* epoch is found */
 		*end = '\0';
 		vr = end+1;
@@ -710,7 +712,6 @@ rpm_transaction_check(VALUE trans)
 
 		for (i = 0; i < num; i++) {
 			const char *altNEVR;
-			int j;
 			VALUE dep;
 
 			p = ps->probs + i;
@@ -753,7 +754,7 @@ rpm_transaction_check(VALUE trans)
 							sense_flags |= RPMSENSE_EQUAL;
 						} else if ( (*relation) == '>' ) {
 							sense_flags |= RPMSENSE_GREATER;
-						} else if ( (*relation), '<' ) {
+						} else if ( (*relation) == '<' ) {
 							sense_flags |= RPMSENSE_LESS;
 						}
 					}
@@ -791,7 +792,7 @@ rpm_transaction_check(VALUE trans)
 	}
 #endif /* RPMPS_OPAQUE */
 	ps = rpmpsFree(ps);
-		
+
 	return list;
 #endif
 }
@@ -960,12 +961,12 @@ rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 							   transaction_callback,(void *)trans);
 	}else{
 		VALUE keys;
-		
+
 		/* rpmcli.h:extern int rpmcliPackagesTotal; */
 		rpmcliPackagesTotal = 0;
-		
+
 		keys = rpm_transaction_keys(trans);
-		
+
 		if (!NIL_P(keys))
 			rpmcliPackagesTotal = NUM2INT(rb_funcall(keys,rb_intern("length"),0));
 
@@ -1010,7 +1011,7 @@ rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 	rb_ivar_set(trans, id_pl, list);
 	}
 	if (ps) ps = rpmpsFree(ps);
-	
+
 #endif
 
 	rb_ivar_set(trans, id_commited, Qtrue);
@@ -1047,9 +1048,9 @@ rpm_db_init_iterator(VALUE db, VALUE key, VALUE val)
 	}
 
 	mi = ALLOC_N(rpm_mi_t,1);
-	if (mi->mi = rpmdbInitIterator(RPM_DB(db), NUM2INT(rb_Integer(key)),
+	if ((mi->mi = rpmdbInitIterator(RPM_DB(db), NUM2INT(rb_Integer(key)),
 						   NIL_P(val) ? NULL : RSTRING(val)->ptr,
-						   NIL_P(val) ? 0 : RSTRING(val)->len)){
+                           NIL_P(val) ? 0 : RSTRING(val)->len))){
 		mi->db = (rpm_db_t*)DATA_PTR(db);
 		db_ref(mi->db);
 		return Data_Wrap_Struct(rpm_cMatchIterator, NULL, mi_free, mi);
