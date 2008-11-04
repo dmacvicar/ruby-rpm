@@ -24,8 +24,10 @@ class RPM_DB_Tests < Test::Unit::TestCase
     assert( File.exist?( "#{@tmppath}/#{RPM['_dbpath']}/Packages" ) )
   end # def test_initdb
 
-  def FAILS_test_rebuild
-    RPM::DB.rebuild( @work_dir )
+  def test_rebuild
+    # We add the "/" to work around an obscure bug in older
+    # RPM versions
+    RPM::DB.rebuild( @work_dir + "/")
     assert( File.exist?( "#{@tmppath}/#{RPM['_dbpath']}/Packages" ) )
   end
 
@@ -40,5 +42,5 @@ class RPM_DB_Tests < Test::Unit::TestCase
   def test_home
     assert_equal( @a.home, RPM['_dbpath'] )
   end
-    
+
 end # class RPM_DB_Tests < Test::Unit::TestCase
