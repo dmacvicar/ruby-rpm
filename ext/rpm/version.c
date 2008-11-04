@@ -191,7 +191,7 @@ rpm_version_cmp(VALUE ver, VALUE other)
 	VALUE vr,or;
 	VALUE vv,ov;
 	int sense = 0;
-	
+
 	if (rb_obj_is_kind_of(other, rpm_cVersion) != Qtrue) {
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
@@ -289,7 +289,7 @@ rpm_version_to_vre(VALUE ver)
 	r = rb_ivar_get(ver, id_r);
 	e = rb_ivar_get(ver, id_e);
 	if (!NIL_P(e)) {
-		snprintf(buf,BUFSIZ,"%d:",NUM2INT(e));
+		snprintf(buf,BUFSIZ,"%ld:", (long) NUM2INT(e));
 		p += strlen(buf);
         }
 	strcpy(p, RSTRING(v)->ptr);
@@ -311,7 +311,7 @@ rpm_version_inspect(VALUE ver)
 	e = rb_ivar_get(ver, id_e);
 
 	if (!NIL_P(e)) {
-		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%d>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, NUM2INT(e));
+		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%ld>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, (long) NUM2INT(e));
         } else {
 		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr);
 	}
@@ -327,7 +327,7 @@ rpm_version_hash(VALUE ver)
 	v = rb_ivar_get(ver, id_v);
 	r = rb_ivar_get(ver, id_r);
 	e = rb_ivar_get(ver, id_e);
-    
+
     h = NIL_P(e) ? 0 : NUM2INT(e);
     h = (h << 1) ^ NUM2LONG(rb_hash(r));
     h = (h << 1) ^ NUM2LONG(rb_hash(v));
