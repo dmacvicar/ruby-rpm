@@ -218,10 +218,10 @@ rpm_spec_get_sources(VALUE spec)
 
 	if (NIL_P(src)) {
 		struct Source* s = RPM_SPEC(spec)->sources;
-	   
+
 		src = rb_ary_new();
 		while (s != NULL) {
-			VALUE obj;
+			VALUE obj = Qnil;
 
 			if (s->flags & RPMBUILD_ISSOURCE) {
 				obj = rpm_source_new(s->fullSource, s->num, s->flags & RPMBUILD_ISNO);

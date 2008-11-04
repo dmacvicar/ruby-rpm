@@ -311,7 +311,6 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 	rpmTagType type;
 	int_32 count;
 	register int i;
-	register const char* p;
 	int ary_p = 0;
 	int i18n_p = 0;
 
