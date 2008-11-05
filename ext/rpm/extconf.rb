@@ -46,7 +46,7 @@ def check_rpm
   return false unless check_db
   # Newer rpm supports pkg-config. If detected, compat mode for now...
   if pkg_config('rpm') then
-     $CFLAGS="#{$CFLAGS} -D_RPM_4_4_COMPAT"
+     $defs << "-D_RPM_4_4_COMPAT"
      return true
   end
 
@@ -68,7 +68,7 @@ def check_rpm_version
   version_string=`LANG=C rpm --version| cut -d' ' -f 3`
   ver=version_string.split(/\./)
   # TODO: zaki: strict checking is requires
-  $CFLAGS="#{$CFLAGS} -DRPM_VERSION_CODE=#{(ver[0].to_i<<16) + (ver[1].to_i<<8) + (ver[2].to_i<<0)}"
+  $defs << "-DRPM_VERSION_CODE=#{(ver[0].to_i<<16) + (ver[1].to_i<<8) + (ver[2].to_i<<0)}"
 end
 
 def check_debug
