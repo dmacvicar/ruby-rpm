@@ -46,9 +46,6 @@ def check_rpm
   return false unless check_db
   # Newer rpm supports pkg-config. If detected, compat mode for now...
   if pkg_config('rpm') then
-     # We assume that the rpm/ subdir is on the search path,
-     # pkg-config only gives us /usr/include or similar
-     $CFLAGS = $CFLAGS.sub(/(-I\S+)(\s*)$/, "\\1/rpm\\2")
      $CFLAGS="#{$CFLAGS} -D_RPM_4_4_COMPAT"
      return true
   end
@@ -88,6 +85,9 @@ exit unless check_rpm
 exit unless check_rpm_version
 
 check_debug
+
+HEADERS = [ "rpmlog", "rpmps", "rpmts", "rpmds" ]
+HEADERS.each { |hdr| have_header("rpm/#{hdr}.h") }
 
 $CFLAGS="#{$CFLAGS} -Werror -Wno-deprecated-declarations"
 

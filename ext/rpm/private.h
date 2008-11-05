@@ -26,15 +26,21 @@
 #include <rpm/rpmlib.h>
 #include <rpm/rpmdb.h>
 #include <rpm/rpmbuild.h>
-#if RPM_VERSION(4,5,90) >= RPM_VERSION_CODE
-#include <rpm/rpmlog.h>
+#if HAVE_RPM_RPMLOG_H
+#  include <rpm/rpmlog.h>
 #else
-#include <rpm/rpmmessages.h>
+#  include <rpm/rpmmessages.h>
+#endif
+#if HAVE_RPM_RPMTS_H
+#  include <rpm/rpmts.h>
+#endif
+#if HAVE_RPM_RPMPS_H
+#  include <rpm/rpmps.h>
+#endif
+#if HAVE_RPM_RPMDS_H
+#  include <rpm/rpmds.h>
 #endif
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
-#include <rpm/rpmts.h>
-#include <rpm/rpmps.h>
-#include <rpm/rpmds.h>
 #include "rpm40_compat.h"
 #endif
 
