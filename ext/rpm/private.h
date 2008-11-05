@@ -6,6 +6,8 @@
 
 /* $Id: private.h 17 2004-03-19 05:12:19Z zaki $ */
 
+#include <extconf.h>
+
 #define RPM_VERSION(maj,min,pl) (((maj) << 16) + ((min) << 8) + (pl))
 
 #include <ctype.h>
@@ -20,19 +22,19 @@
 #include <unistd.h>
 #include <st.h>
 
-#include <rpmcli.h>
-#include <rpmlib.h>
-#include <rpmdb.h>
-#include <rpmbuild.h>
+#include <rpm/rpmcli.h>
+#include <rpm/rpmlib.h>
+#include <rpm/rpmdb.h>
+#include <rpm/rpmbuild.h>
 #if RPM_VERSION(4,5,90) >= RPM_VERSION_CODE
-#include <rpmlog.h>
+#include <rpm/rpmlog.h>
 #else
-#include <rpmmessages.h>
+#include <rpm/rpmmessages.h>
 #endif
 #if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
-#include <rpmts.h>
-#include <rpmps.h>
-#include <rpmds.h>
+#include <rpm/rpmts.h>
+#include <rpm/rpmps.h>
+#include <rpm/rpmds.h>
 #include "rpm40_compat.h"
 #endif
 

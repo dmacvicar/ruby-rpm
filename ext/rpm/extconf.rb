@@ -5,10 +5,15 @@
 
 ### $Id: extconf.rb 19 2004-03-28 10:01:23Z zaki $
 
+# To build against an rpm installed in a nonstandard location, you need to
+# set PKG_CONFIG_PATH and make sure the corresponding rpm executable is on
+# PATH, e.g. if rpm was configured with --prefix=/dir you want
+# PKG_CONFIG_PATH=/dir/lib/pkgconfig
+# PATH=/dir/bin:$PATH
+
 require 'mkmf'
 
 dir_config('popt')
-dir_config("rpm", "/usr/include/rpm", "/usr/lib")
 
 def check_popt
   if have_header('popt.h') and have_library('popt') then
@@ -41,12 +46,18 @@ def check_rpm
   return false unless check_db
   # Newer rpm supports pkg-config. If detected, compat mode for now...
   if pkg_config('rpm') then
+     # We assume that the rpm/ subdir is on the search path,
+     # pkg-config only gives us /usr/include or similar
+     $CFLAGS = $CFLAGS.sub(/(-I\S+)(\s*)$/, "\\1/rpm\\2")
      $CFLAGS="#{$CFLAGS} -D_RPM_4_4_COMPAT"
      return true
   end
+
+  # Set things up manually
+  dir_config("rpm")
   $libs = append_library($libs, 'rpmdb')
   $libs = append_library($libs, 'rpm')
-  if have_header('rpmlib.h') and
+  if have_header('rpm/rpmlib.h') and
       have_library('rpmio') and
       have_library('rpmbuild', 'getBuildTime') then
     true
