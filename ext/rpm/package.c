@@ -104,12 +104,28 @@ package_s_create(VALUE klass, VALUE name, VALUE version)
   return pkg;
 }
 
+rpmRC read_header_from_file(FD_t fd, const char *filename, Header *hdr)
+{
+	rpmRC rc;
+#if RPM_VERSION_CODE >= RPM_VERSION(4,6,0)
+	rpmts ts = rpmtsCreate();
+	rc = rpmReadPackageFile(ts, fd, filename, hdr);
+	rpmtsFree(ts);
+#else
+    /* filename is ignored */
+    Header sigs;
+	rc = rpmReadPackageInfo(fd, &sigs, hdr);
+    headerFree(sigs);
+#endif
+    return rc;
+}
+
 static VALUE
 package_s_open(VALUE klass, VALUE filename)
 {
 	VALUE pkg = Qnil;
 	FD_t fd;
-	Header hdr, sigs;
+	Header hdr;
 	rpmRC rc;
 
 	if (TYPE(filename) != T_STRING) {
@@ -121,7 +137,8 @@ package_s_open(VALUE klass, VALUE filename)
 		rb_raise(rb_eRuntimeError, "can not open file %s",
 				 RSTRING(filename)->ptr);
 	}
-	rc = rpmReadPackageInfo(fd, &sigs, &hdr);
+
+    rc = read_header_from_file(fd, RSTRING(filename)->ptr, &hdr);
 	Fclose(fd);
 
 	switch (rc) {
@@ -133,7 +150,7 @@ package_s_open(VALUE klass, VALUE filename)
 		/* MO_TODO: zaki: should I warn these two status to users? */
 #endif
 	case RPMRC_OK:
-		headerFree(sigs);
+		//headerFree(sigs);
 		pkg = package_new_from_header(klass, hdr);
 		headerFree(hdr);
 		break;
@@ -175,7 +192,7 @@ package_s_load(VALUE klass, VALUE str)
 	Fseek(fd, 0, SEEK_SET);
 	hdr = headerRead(fd, HEADER_MAGIC_YES);
 	Fclose(fd);
-	Unlink(RSTRING(temp)->ptr);
+	unlink(RSTRING(temp)->ptr);
 
 	if (!hdr) {
 		rb_raise(rb_eArgError, "unable load RPM::Package");
@@ -190,15 +207,15 @@ package_s_load(VALUE klass, VALUE str)
 VALUE
 rpm_package_copy_tags(VALUE from,VALUE to,VALUE tags)
 {
-	int_32 *copy_tags;
+	rpmTag *copy_tags;
 	int length = NUM2INT(rb_funcall(tags,rb_intern("length"),0));
 	int i;
 
-	copy_tags = ALLOCA_N(int_32,length);
+	copy_tags = ALLOCA_N(rpmTag,length);
 	for (i=0;i<length;i++)
 		copy_tags[i] = NUM2INT(rb_ary_entry(tags, i));
 	headerCopyTags(RPM_HEADER(from),RPM_HEADER(to),copy_tags);
-  return Qnil;
+    return Qnil;
 }
 
 VALUE
@@ -307,15 +324,12 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 {
 	rpmTag tagval = NUM2INT(tag);
 	VALUE val = Qnil;
-	void* data;
-	rpmTagType type;
-	int_32 count;
-	register int i;
+    rpmtd tagc = rpmtdNew();
 	int ary_p = 0;
 	int i18n_p = 0;
 
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), tagval, (hTYP_t)&type,
-									 (hPTR_t*)&data, (hCNT_t)&count)) {
+	if (!headerGet(RPM_HEADER(pkg), tagval, tagc, HEADERGET_MINMEM)) {
+        rpmtdFree(tagc);
 		goto leave;
 	}
 	switch (tagval) {
@@ -345,91 +359,90 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 	case RPMTAG_DESCRIPTION:
 		i18n_p = 1;
 		break;
-  default:
-    break;
+    default:
+        break;
 	}
 
-	switch (type) {
+	switch (rpmtdType(tagc)) {
 	case RPM_BIN_TYPE:
-		val = rb_str_new(data, count);
+		val = rb_str_new2(rpmtdGetString(tagc));
 		break;
 
 	case RPM_CHAR_TYPE:
 	case RPM_INT8_TYPE:
-		if (count == 1 && !ary_p) {
-			val = INT2NUM(*(int_8*)data);
+		if (rpmtdCount(tagc) == 1 && !ary_p) {
+			val = INT2NUM(*rpmtdGetChar(tagc));
 		} else {
 			val = rb_ary_new();
-			for (i = 0; i < count; i++) {
-				rb_ary_push(val, INT2NUM(((int_8*)data)[i]));
+			rpmtdInit(tagc);
+			while ( rpmtdNext(tagc) != -1 ) {
+				rb_ary_push(val, INT2NUM(*rpmtdGetChar(tagc)));
 			}
 		}
 		break;
 
 	case RPM_INT16_TYPE:
-		if (count == 1 && !ary_p) {
-			val = INT2NUM(*(int_16*)data);
+		if (rpmtdCount(tagc) == 1 && !ary_p) {
+			val = INT2NUM(*rpmtdGetUint16(tagc));
 		} else {
 			val = rb_ary_new();
-			for (i = 0; i < count; i++) {
-				rb_ary_push(val, INT2NUM(((int_16*)data)[i]));
+			rpmtdInit(tagc);
+			while ( rpmtdNext(tagc) != -1 ) {
+				rb_ary_push(val, INT2NUM(*rpmtdGetUint16(tagc)));
 			}
 		}
 		break;
 
 	case RPM_INT32_TYPE:
-		if (count == 1 && !ary_p) {
-			val = INT2NUM(*(int_32*)data);
+		if (rpmtdCount(tagc) == 1 && !ary_p) {
+			val = INT2NUM(*rpmtdGetUint32(tagc));
 		} else {
 			val = rb_ary_new();
-			for (i = 0; i < count; i++) {
-				rb_ary_push(val, INT2NUM(((int_32*)data)[i]));
+			rpmtdInit(tagc);
+			while ( rpmtdNext(tagc) != -1) {
+				rb_ary_push(val, INT2NUM(*rpmtdGetUint32(tagc)));
 			}
 		}
 		break;
 
 	case RPM_STRING_TYPE:
-		if (count == 1 && !ary_p) {
-			val = rb_str_new2((char*)data);
+		if (rpmtdCount(tagc) == 1 && !ary_p) {
+			val = rb_str_new2(rpmtdGetString(tagc));
 		} else {
-			char** p = (char**)data;
 			val = rb_ary_new();
-			for (i = 0; i < count; i++) {
-				rb_ary_push(val, rb_str_new2(p[i]));
+			while ( rpmtdNext(tagc) != -1) {
+				rb_ary_push(val, rb_str_new2(rpmtdGetString(tagc)));
 			}
 		}
-		release_entry(type, data);
+		rpmtdFree(tagc);
 		break;
 
 	case RPM_STRING_ARRAY_TYPE:
 		{
-			char** p = (char**)data;
 			if (i18n_p) {
-				char** i18ntab;
-				rpmTagType i18nt;
-				int_32 i18nc;
+                rpmtd i18ntd = rpmtdNew();
 
-				if (!headerGetEntryMinMemory(
-						RPM_HEADER(pkg), HEADER_I18NTABLE, (hTYP_t)&i18nt,
-						(hPTR_t*)&i18ntab, (hCNT_t)&i18nc)) {
+				if (!headerGet(RPM_HEADER(pkg), HEADER_I18NTABLE, i18ntd, HEADERGET_MINMEM)) {
 					goto strary;
 				}
 
 				val = rb_hash_new();
-				for (i = 0; i < count; i++) {
-					VALUE lang = rb_str_new2(i18ntab[i]);
-					VALUE str = rb_str_new2(p[i]);
+				rpmtdInit(tagc);
+				while ( rpmtdNext(tagc) != -1) {
+					VALUE lang = rb_str_new2(rpmtdNextString(i18ntd));
+					VALUE str = rb_str_new2(rpmtdGetString(tagc));
 					rb_hash_aset(val, lang, str);
 				}
-				release_entry(i18nt, (void*)i18ntab);
+                rpmtdFree(i18ntd);
 			} else {
 			strary:
 				val = rb_ary_new();
-				for (i = 0; i < count; i++) {
-					rb_ary_push(val, rb_str_new2(p[i]));
+				rpmtdInit(tagc);
+				while ( rpmtdNext(tagc) != -1) {
+					rb_ary_push(val, rb_str_new2(rpmtdGetString(tagc)));
 				}
 			}
-			release_entry(type, data);
+            rpmtdFree(tagc);
 		}
 		break;
 
@@ -582,38 +595,34 @@ VALUE
 rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALUE (*dependency_new)(const char*,VALUE,int,VALUE))
 {
 	VALUE deps;
-	register int i;
 
-	char **names,**versions;
-	int_32 *flags;
-	rpmTagType nametype,versiontype,flagtype;
-	int_32 count;
+    rpmtd nametd = rpmtdNew();
+    rpmtd versiontd = rpmtdNew();
+    rpmtd flagtd = rpmtdNew();
 
 	deps = rb_ary_new();
 
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), nametag, (hTYP_t)&nametype,
-						 (hPTR_t*)&names, (hCNT_t)&count)) {
+	if (!headerGet(RPM_HEADER(pkg), nametag, nametd, HEADERGET_MINMEM)) {
+		goto leave;
+	}
+	if (!headerGet(RPM_HEADER(pkg), versiontag, versiontd, HEADERGET_MINMEM)) {
+		goto leave;
 		return deps;
 	}
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), versiontag, (hTYP_t)&versiontype,
-						 (hPTR_t*)&versions, (hCNT_t)&count)) {
-		release_entry(nametype, (void*)names);
-		return deps;
-	}
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), flagtag, (hTYP_t)&flagtype,
-						 (hPTR_t*)&flags, (hCNT_t)&count)) {
-		release_entry(nametype, (void*)names);
-		release_entry(versiontype, (void*)versions);
+	if (!headerGet(RPM_HEADER(pkg), flagtag, flagtd, HEADERGET_MINMEM)) {
+		goto leave;
 		return deps;
 	}
 
-	for (i = 0; i < count; i++) {
-		rb_ary_push(deps,dependency_new(names[i],rpm_version_new(versions[i]),flags[i],pkg));
-	}
-
-	release_entry(nametype, (void*)names);
-	release_entry(versiontype, (void*)versions);
-	release_entry(flagtype, (void*)flags);
+    rpmtdInit(nametd);
+    while ( rpmtdNext(nametd) != -1 ) {
+        rb_ary_push(deps,dependency_new(rpmtdGetString(nametd),rpm_version_new(rpmtdNextString(versiontd)),*rpmtdNextUint32(flagtd),pkg));
+    }
+    
+ leave:
+    rpmtdFree(nametd);
+    rpmtdFree(versiontd);
+    rpmtdFree(flagtd);
 	return deps;
 }
 
@@ -645,38 +654,39 @@ VALUE
 rpm_package_get_changelog(VALUE pkg)
 {
 	VALUE cl;
-	register int i;
-
-	char **times,**names,**texts;
-	rpmTagType timetype,nametype,texttype;
-	int_32 count;
+	rpmtd timetd = rpmtdNew();
+	rpmtd nametd = rpmtdNew();
+	rpmtd texttd = rpmtdNew();
 
 	cl = rb_ary_new();
 
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), RPMTAG_CHANGELOGTIME, (hTYP_t)&timetype,
-						 (hPTR_t*)&times, (hCNT_t)&count)) {
-		return cl;
+	if (!headerGet(RPM_HEADER(pkg), RPMTAG_CHANGELOGTIME, timetd, HEADERGET_MINMEM)) {
+		goto leave;
 	}
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), RPMTAG_CHANGELOGNAME, (hTYP_t)&nametype,
-						 (hPTR_t*)&names, (hCNT_t)&count)) {
-		release_entry(timetype, (void*)times);
-		return cl;
+	if (!headerGet(RPM_HEADER(pkg), RPMTAG_CHANGELOGNAME, nametd, HEADERGET_MINMEM)) {
+		goto leave;
 	}
-	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), RPMTAG_CHANGELOGTEXT, (hTYP_t)&texttype,
-						 (hPTR_t*)&texts, (hCNT_t)&count)) {
-		release_entry(timetype, (void*)times);
-		release_entry(nametype, (void*)names);
-		return cl;
+	if (!headerGet(RPM_HEADER(pkg), RPMTAG_CHANGELOGTEXT, texttd, HEADERGET_MINMEM)) {
+		goto leave;
 	}
 
-	for (i = 0; i < count; i++) {
+	rpmtdInit(timetd);
+	rpmtdInit(nametd);
+	rpmtdInit(texttd);
+
+	while ( rpmtdNext(timetd) != -1 ) {
 		VALUE chglog = rb_struct_new(
 			rpm_sChangeLog,
-			rb_time_new((time_t)times[i], (time_t)0),
-			rb_str_new2(names[i]),
-			rb_str_new2(texts[i]));
-		rb_ary_push(cl, chglog);
+			rb_time_new((time_t) rpmtdGetUint32(timetd), (time_t)0),
+			rb_str_new2(rpmtdNextString(nametd)),
+			rb_str_new2(rpmtdNextString(texttd)));
+		 rb_ary_push(cl, chglog);
 	}
+
+ leave:
+	rpmtdFree(timetd);
+	rpmtdFree(nametd);
+	rpmtdFree(texttd);
 	return cl;
 }
 
@@ -698,7 +708,7 @@ rpm_package_dump(VALUE pkg)
 	munmap(buf, size);
 
 	Fclose(fd);
-	Unlink(RSTRING(temp)->ptr);
+	unlink(RSTRING(temp)->ptr);
 
 	return dump;
 }

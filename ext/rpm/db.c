@@ -684,7 +684,7 @@ rpm_transaction_check(VALUE trans)
 						sense_flags |= RPMSENSE_EQUAL;
 					} else if ( (*relation) == '>' ) {
 						sense_flags |= RPMSENSE_GREATER;
-					} else if ( (*relation), '<' ) {
+					} else if ( (*relation) == '<' ) {
 						sense_flags |= RPMSENSE_LESS;
 					}
 				}
@@ -958,7 +958,7 @@ rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 
 	if (rb_block_given_p() == Qtrue) {
 		rpmtsSetNotifyCallback(RPM_TRANSACTION(trans),
-							   transaction_callback,(void *)trans);
+							   (rpmCallbackFunction)transaction_callback,(void *)trans);
 	}else{
 		VALUE keys;
 

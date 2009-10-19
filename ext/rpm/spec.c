@@ -124,38 +124,34 @@ rpm_spec_get_buildrequires(VALUE spec)
 {
 	VALUE br = rb_ivar_get(spec, id_br);
 
-	if (NIL_P(br)) {
-		const char** names;
-		const char** vers;
-		int_32* flags;
-		int_32 count;
-		rpmTagType nt, vt, type;
-		register int i;
+	rpmtd nametd = rpmtdNew();
+	rpmtd versiontd = rpmtdNew();
+	rpmtd flagtd = rpmtdNew();
 
+	if (NIL_P(br)) {
 		br = rb_ary_new();
-		if (!headerGetEntryMinMemory(RPM_SPEC(spec)->buildRestrictions,
-									 RPMTAG_REQUIRENAME, (hTYP_t)&nt,
-									 (hPTR_t*)&names, (hCNT_t)&count)) {
+		if (!headerGet(RPM_SPEC(spec)->buildRestrictions,
+                       RPMTAG_REQUIRENAME, nametd, HEADERGET_MINMEM)) {
 			goto leave;
 		}
 
 		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_REQUIREVERSION,
-				  &vt, (void*)&vers);
+				  versiontd);
 		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_REQUIREFLAGS,
-				  &type, (void*)&flags);
-
-		for (i = 0; i < count; i++) {
-			rb_ary_push(br, rpm_require_new(names[i], rpm_version_new(vers[i]),
-											flags[i], spec));
+				  flagtd);
+		
+		rpmtdInit(nametd);
+        while ( rpmtdNext(nametd) != -1 ) {
+			rb_ary_push(br, rpm_require_new(rpmtdGetString(nametd), rpm_version_new(rpmtdNextString(versiontd)), *rpmtdNextUint32(flagtd), spec));
 		}
-
-		release_entry(nt, names);
-		release_entry(vt, vers);
-
 		rb_ivar_set(spec, id_br, br);
 	}
 
  leave:
+	rpmtdFree(nametd);
+	rpmtdFree(versiontd);
+	rpmtdFree(flagtd);
+
 	return br;
 }
 
@@ -164,37 +160,35 @@ rpm_spec_get_buildconflicts(VALUE spec)
 {
 	VALUE bc = rb_ivar_get(spec, id_bc);
 
-	if (NIL_P(bc)) {
-		const char** names;
-		const char** vers;
-		int_32* flags;
-		int_32 count;
-		rpmTagType nt, vt, type;
-		register int i;
+	rpmtd nametd = rpmtdNew();
+	rpmtd versiontd = rpmtdNew();
+	rpmtd flagtd = rpmtdNew();
 
+	if (NIL_P(bc)) {
 		bc = rb_ary_new();
-		if (!headerGetEntryMinMemory(RPM_SPEC(spec)->buildRestrictions,
-									 RPMTAG_CONFLICTNAME, (hTYP_t)&nt,
-									 (hPTR_t*)&names, (hCNT_t)&count)) {
+		if (!headerGet(RPM_SPEC(spec)->buildRestrictions,
+                       RPMTAG_CONFLICTNAME, nametd, HEADERGET_MINMEM)) {
+		
 			goto leave;
 		}
 
 		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_CONFLICTVERSION,
-				  &vt, (void*)&vers);
+				  versiontd);
 		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_CONFLICTFLAGS,
-				  &type, (void*)&flags);
+				  flagtd);
 
-		for (i = 0; i < count; i++) {
-			rb_ary_push(bc, rpm_conflict_new(names[i], rpm_version_new(vers[i]),
-											 flags[i], spec));
+		rpmtdInit(nametd);
+		while ( rpmtdNext(nametd) != -1) {
+			rb_ary_push(bc, rpm_conflict_new(rpmtdGetString(nametd), rpm_version_new(rpmtdNextString(versiontd)), *rpmtdNextUint32(flagtd), spec));
 		}
-
-		release_entry(nt, names);
-		release_entry(vt, vers);
 
 		rb_ivar_set(spec, id_bc, bc);
 	}
  leave:
+	rpmtdFree(nametd);
+	rpmtdFree(versiontd);
+	rpmtdFree(flagtd);
+
 	return bc;
 }
 

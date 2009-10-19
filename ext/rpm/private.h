@@ -40,9 +40,6 @@
 #if HAVE_RPM_RPMDS_H
 #  include <rpm/rpmds.h>
 #endif
-#if RPM_VERSION(4,1,0) <= RPM_VERSION_CODE
-#include "rpm40_compat.h"
-#endif
 
 #include "ruby-rpm.h"
 
@@ -67,7 +64,6 @@
 #else
 #define RPMTS_AVAILABLE 1
 #endif
-
 
 typedef struct {
 	rpmdb db;
@@ -119,11 +115,10 @@ void Init_rpm_spec(void);
 void Init_rpm_version(void);
 
 static void inline
-get_entry(Header hdr, rpmTag tag, rpmTagType* type, void** ptr)
+get_entry(Header hdr, rpmTag tag, rpmtd tc)
 {
-	if (!headerGetEntryMinMemory(
-			hdr, tag, (hTYP_t)type, (hPTR_t*)ptr, NULL)) {
-		*ptr = NULL;
+	if (!headerGet(
+			hdr, tag, tc, HEADERGET_MINMEM)) {
 	}
 }
 

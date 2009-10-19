@@ -52,7 +52,6 @@ def check_rpm
 
   # Set things up manually
   dir_config("rpm")
-  $libs = append_library($libs, 'rpmdb')
   $libs = append_library($libs, 'rpm')
   if have_header('rpm/rpmlib.h') and
       have_library('rpmio') and
