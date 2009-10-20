@@ -104,7 +104,7 @@ package_s_create(VALUE klass, VALUE name, VALUE version)
   return pkg;
 }
 
-rpmRC read_header_from_file(FD_t fd, const char *filename, Header *hdr)
+static rpmRC read_header_from_file(FD_t fd, const char *filename, Header *hdr)
 {
 	rpmRC rc;
 #if RPM_VERSION_CODE >= RPM_VERSION(4,6,0)
