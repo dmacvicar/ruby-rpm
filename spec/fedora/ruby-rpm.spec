@@ -6,7 +6,7 @@
 Summary: Ruby bindings for RPM
 Name: ruby-rpm
 
-Version: 1.2.3
+Version: 1.2.4
 Release: 3%{?dist}
 Group: Development/Languages
 License: GPLv2+

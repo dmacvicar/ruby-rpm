@@ -4,7 +4,7 @@ require 'rake/testtask'
 require 'rake/gempackagetask'
 
 PKG_NAME='ruby-rpm'
-PKG_VERSION='1.2.3'
+PKG_VERSION='1.2.4'
 
 EXT_CONF='ext/rpm/extconf.rb'
 MAKEFILE="ext/rpm/Makefile"

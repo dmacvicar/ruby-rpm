@@ -1,3 +1,7 @@
+2009-10-20  Duncan Mac-Vicar P. <dmacvicar@suse.de>
+
+  * port to rpm 4.7. Still should work with older versions
+
 2006-10-13  David Lutterkort  <dlutter@redhat.com>
 
 	* doc/patches: apply patches pulled from SuSe and MDK rpms

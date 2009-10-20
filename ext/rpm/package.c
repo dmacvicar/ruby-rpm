@@ -107,7 +107,8 @@ package_s_create(VALUE klass, VALUE name, VALUE version)
 static rpmRC read_header_from_file(FD_t fd, const char *filename, Header *hdr)
 {
 	rpmRC rc;
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+//#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#if 0
     /* filename is ignored */
     Header sigs;
 	rc = rpmReadPackageInfo(fd, &sigs, hdr);
@@ -207,6 +208,9 @@ package_s_load(VALUE klass, VALUE str)
 VALUE
 rpm_package_copy_tags(VALUE from,VALUE to,VALUE tags)
 {
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#define rpmTag int_32
+#endif
 	rpmTag *copy_tags;
 	int length = NUM2INT(rb_funcall(tags,rb_intern("length"),0));
 	int i;
@@ -319,6 +323,145 @@ rpm_package_delete_tag(VALUE pkg, VALUE tag)
 	return val;
 }
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+VALUE
+rpm_package_aref(VALUE pkg, VALUE tag)
+{
+	rpmTag tagval = NUM2INT(tag);
+	VALUE val = Qnil;
+	void* data;
+	rpmTagType type;
+	int_32 count;
+	register int i;
+	int ary_p = 0;
+	int i18n_p = 0;
+
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), tagval, (hTYP_t)&type,
+									 (hPTR_t*)&data, (hCNT_t)&count)) {
+		goto leave;
+	}
+	switch (tagval) {
+	case RPMTAG_DIRINDEXES:
+	case RPMTAG_FILESIZES:
+	case RPMTAG_FILESTATES:
+	case RPMTAG_FILEMODES:
+	case RPMTAG_FILERDEVS:
+	case RPMTAG_FILEMTIMES:
+	case RPMTAG_FILEMD5S:
+	case RPMTAG_FILEFLAGS:
+	case RPMTAG_FILEUSERNAME:
+	case RPMTAG_FILEGROUPNAME:
+	case RPMTAG_PROVIDEFLAGS:
+	case RPMTAG_REQUIREFLAGS:
+	case RPMTAG_CONFLICTFLAGS:
+	case RPMTAG_OBSOLETEFLAGS:
+		ary_p = 1;
+		break;
+
+	case RPMTAG_GROUP:
+	case RPMTAG_SUMMARY:
+	case RPMTAG_DISTRIBUTION:
+	case RPMTAG_VENDOR:
+	case RPMTAG_LICENSE:
+	case RPMTAG_PACKAGER:
+	case RPMTAG_DESCRIPTION:
+		i18n_p = 1;
+		break;
+  default:
+    break;
+	}
+
+	switch (type) {
+	case RPM_BIN_TYPE:
+		val = rb_str_new(data, count);
+		break;
+
+	case RPM_CHAR_TYPE:
+	case RPM_INT8_TYPE:
+		if (count == 1 && !ary_p) {
+			val = INT2NUM(*(int_8*)data);
+		} else {
+			val = rb_ary_new();
+			for (i = 0; i < count; i++) {
+				rb_ary_push(val, INT2NUM(((int_8*)data)[i]));
+			}
+		}
+		break;
+
+	case RPM_INT16_TYPE:
+		if (count == 1 && !ary_p) {
+			val = INT2NUM(*(int_16*)data);
+		} else {
+			val = rb_ary_new();
+			for (i = 0; i < count; i++) {
+				rb_ary_push(val, INT2NUM(((int_16*)data)[i]));
+			}
+		}
+		break;
+
+	case RPM_INT32_TYPE:
+		if (count == 1 && !ary_p) {
+			val = INT2NUM(*(int_32*)data);
+		} else {
+			val = rb_ary_new();
+			for (i = 0; i < count; i++) {
+				rb_ary_push(val, INT2NUM(((int_32*)data)[i]));
+			}
+		}
+		break;
+
+	case RPM_STRING_TYPE:
+		if (count == 1 && !ary_p) {
+			val = rb_str_new2((char*)data);
+		} else {
+			char** p = (char**)data;
+			val = rb_ary_new();
+			for (i = 0; i < count; i++) {
+				rb_ary_push(val, rb_str_new2(p[i]));
+			}
+		}
+		release_entry(type, data);
+		break;
+
+	case RPM_STRING_ARRAY_TYPE:
+		{
+			char** p = (char**)data;
+			if (i18n_p) {
+				char** i18ntab;
+				rpmTagType i18nt;
+				int_32 i18nc;
+
+				if (!headerGetEntryMinMemory(
+						RPM_HEADER(pkg), HEADER_I18NTABLE, (hTYP_t)&i18nt,
+						(hPTR_t*)&i18ntab, (hCNT_t)&i18nc)) {
+					goto strary;
+				}
+
+				val = rb_hash_new();
+				for (i = 0; i < count; i++) {
+					VALUE lang = rb_str_new2(i18ntab[i]);
+					VALUE str = rb_str_new2(p[i]);
+					rb_hash_aset(val, lang, str);
+				}
+				release_entry(i18nt, (void*)i18ntab);
+			} else {
+			strary:
+				val = rb_ary_new();
+				for (i = 0; i < count; i++) {
+					rb_ary_push(val, rb_str_new2(p[i]));
+				}
+			}
+			release_entry(type, data);
+		}
+		break;
+
+	default:
+		goto leave;
+	}
+ leave:
+	return val;
+}
+#else
 VALUE
 rpm_package_aref(VALUE pkg, VALUE tag)
 {
@@ -452,6 +595,7 @@ rpm_package_aref(VALUE pkg, VALUE tag)
  leave:
 	return val;
 }
+#endif
 
 VALUE
 rpm_package_sprintf(VALUE pkg, VALUE fmt)
@@ -591,6 +735,46 @@ rpm_package_get_files(VALUE pkg)
 	return files;
 }
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+VALUE
+rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALUE (*dependency_new)(const char*,VALUE,int,VALUE))
+{
+	VALUE deps;
+	register int i;
+
+	char **names,**versions;
+	int_32 *flags;
+	rpmTagType nametype,versiontype,flagtype;
+	int_32 count;
+
+	deps = rb_ary_new();
+
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), nametag, (hTYP_t)&nametype,
+						 (hPTR_t*)&names, (hCNT_t)&count)) {
+		return deps;
+	}
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), versiontag, (hTYP_t)&versiontype,
+						 (hPTR_t*)&versions, (hCNT_t)&count)) {
+		release_entry(nametype, (void*)names);
+		return deps;
+	}
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), flagtag, (hTYP_t)&flagtype,
+						 (hPTR_t*)&flags, (hCNT_t)&count)) {
+		release_entry(nametype, (void*)names);
+		release_entry(versiontype, (void*)versions);
+		return deps;
+	}
+
+	for (i = 0; i < count; i++) {
+		rb_ary_push(deps,dependency_new(names[i],rpm_version_new(versions[i]),flags[i],pkg));
+	}
+
+	release_entry(nametype, (void*)names);
+	release_entry(versiontype, (void*)versions);
+	release_entry(flagtype, (void*)flags);
+	return deps;
+}
+#else
 VALUE
 rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALUE (*dependency_new)(const char*,VALUE,int,VALUE))
 {
@@ -625,6 +809,7 @@ rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALU
     rpmtdFree(flagtd);
 	return deps;
 }
+#endif
 
 VALUE
 rpm_package_get_provides(VALUE pkg)
@@ -650,6 +835,46 @@ rpm_package_get_obsoletes(VALUE pkg)
 	return rpm_package_get_dependency(pkg,RPMTAG_OBSOLETENAME,RPMTAG_OBSOLETEVERSION,RPMTAG_OBSOLETEFLAGS,rpm_obsolete_new);
 }
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+VALUE
+rpm_package_get_changelog(VALUE pkg)
+{
+	VALUE cl;
+	register int i;
+
+	char **times,**names,**texts;
+	rpmTagType timetype,nametype,texttype;
+	int_32 count;
+
+	cl = rb_ary_new();
+
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), RPMTAG_CHANGELOGTIME, (hTYP_t)&timetype,
+						 (hPTR_t*)&times, (hCNT_t)&count)) {
+		return cl;
+	}
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), RPMTAG_CHANGELOGNAME, (hTYP_t)&nametype,
+						 (hPTR_t*)&names, (hCNT_t)&count)) {
+		release_entry(timetype, (void*)times);
+		return cl;
+	}
+	if (!headerGetEntryMinMemory(RPM_HEADER(pkg), RPMTAG_CHANGELOGTEXT, (hTYP_t)&texttype,
+						 (hPTR_t*)&texts, (hCNT_t)&count)) {
+		release_entry(timetype, (void*)times);
+		release_entry(nametype, (void*)names);
+		return cl;
+	}
+
+	for (i = 0; i < count; i++) {
+		VALUE chglog = rb_struct_new(
+			rpm_sChangeLog,
+			rb_time_new((time_t)times[i], (time_t)0),
+			rb_str_new2(names[i]),
+			rb_str_new2(texts[i]));
+		rb_ary_push(cl, chglog);
+	}
+	return cl;
+}
+#else
 VALUE
 rpm_package_get_changelog(VALUE pkg)
 {
@@ -689,6 +914,7 @@ rpm_package_get_changelog(VALUE pkg)
 	rpmtdFree(texttd);
 	return cl;
 }
+#endif
 
 VALUE
 rpm_package_dump(VALUE pkg)
