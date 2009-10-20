@@ -52,6 +52,7 @@ def check_rpm
 
   # Set things up manually
   dir_config("rpm")
+  $libs = append_library($libs, 'rpmdb') if rpm_version < rpm_version([4,6,0])
   $libs = append_library($libs, 'rpm')
   if have_header('rpm/rpmlib.h') and
       have_library('rpmio') and
@@ -63,11 +64,18 @@ def check_rpm
   end
 end
 
+# if no parameters, returns the installed rpm
+# version, or the one specified by the array
+# ie: [4,1,0]
+def rpm_version(ver=[])
+  ver = `LANG=C rpm --version| cut -d' ' -f 3`.split(/\./) if ver.empty?
+  return (ver[0].to_i<<16) + (ver[1].to_i<<8) + (ver[2].to_i<<0)
+end
+
 def check_rpm_version
-  version_string=`LANG=C rpm --version| cut -d' ' -f 3`
-  ver=version_string.split(/\./)
   # TODO: zaki: strict checking is requires
-  $defs << "-DRPM_VERSION_CODE=#{(ver[0].to_i<<16) + (ver[1].to_i<<8) + (ver[2].to_i<<0)}"
+  verflag = "-DRPM_VERSION_CODE=#{rpm_version}"
+  $defs << verflag
 end
 
 def check_debug

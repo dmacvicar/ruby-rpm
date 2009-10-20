@@ -114,13 +114,22 @@ void Init_rpm_spec(void);
 /* version.c */
 void Init_rpm_version(void);
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+static void inline
+get_entry(Header hdr, rpmTag tag, rpmTagType* type, void** ptr)
+{
+	if (!headerGetEntryMinMemory(
+			hdr, tag, (hTYP_t)type, (hPTR_t*)ptr, NULL)) {
+		*ptr = NULL;
+	}
+}
+#else
 static void inline
 get_entry(Header hdr, rpmTag tag, rpmtd tc)
 {
-	if (!headerGet(
-			hdr, tag, tc, HEADERGET_MINMEM)) {
-	}
+	headerGet(hdr, tag, tc, HEADERGET_MINMEM);
 }
+#endif
 
 static void inline
 release_entry(rpmTagType type, void* ptr)

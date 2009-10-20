@@ -124,6 +124,41 @@ rpm_spec_get_buildrequires(VALUE spec)
 {
 	VALUE br = rb_ivar_get(spec, id_br);
 
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+	if (NIL_P(br)) {
+		const char** names;
+		const char** vers;
+		int_32* flags;
+		int_32 count;
+		rpmTagType nt, vt, type;
+		register int i;
+
+		br = rb_ary_new();
+		if (!headerGetEntryMinMemory(RPM_SPEC(spec)->buildRestrictions,
+									 RPMTAG_REQUIRENAME, (hTYP_t)&nt,
+									 (hPTR_t*)&names, (hCNT_t)&count)) {
+			goto leave;
+		}
+
+		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_REQUIREVERSION,
+				  &vt, (void*)&vers);
+		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_REQUIREFLAGS,
+				  &type, (void*)&flags);
+
+		for (i = 0; i < count; i++) {
+			rb_ary_push(br, rpm_require_new(names[i], rpm_version_new(vers[i]),
+											flags[i], spec));
+		}
+
+		release_entry(nt, names);
+		release_entry(vt, vers);
+
+		rb_ivar_set(spec, id_br, br);
+	}
+
+ leave:
+	return br;
+#else
 	rpmtd nametd = rpmtdNew();
 	rpmtd versiontd = rpmtdNew();
 	rpmtd flagtd = rpmtdNew();
@@ -153,13 +188,47 @@ rpm_spec_get_buildrequires(VALUE spec)
 	rpmtdFree(flagtd);
 
 	return br;
+#endif
 }
 
 VALUE
 rpm_spec_get_buildconflicts(VALUE spec)
 {
 	VALUE bc = rb_ivar_get(spec, id_bc);
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+	if (NIL_P(bc)) {
+		const char** names;
+		const char** vers;
+		int_32* flags;
+		int_32 count;
+		rpmTagType nt, vt, type;
+		register int i;
 
+		bc = rb_ary_new();
+		if (!headerGetEntryMinMemory(RPM_SPEC(spec)->buildRestrictions,
+									 RPMTAG_CONFLICTNAME, (hTYP_t)&nt,
+									 (hPTR_t*)&names, (hCNT_t)&count)) {
+			goto leave;
+		}
+
+		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_CONFLICTVERSION,
+				  &vt, (void*)&vers);
+		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_CONFLICTFLAGS,
+				  &type, (void*)&flags);
+
+		for (i = 0; i < count; i++) {
+			rb_ary_push(bc, rpm_conflict_new(names[i], rpm_version_new(vers[i]),
+											 flags[i], spec));
+		}
+
+		release_entry(nt, names);
+		release_entry(vt, vers);
+
+		rb_ivar_set(spec, id_bc, bc);
+	}
+ leave:
+	return bc;
+#else
 	rpmtd nametd = rpmtdNew();
 	rpmtd versiontd = rpmtdNew();
 	rpmtd flagtd = rpmtdNew();
@@ -190,6 +259,7 @@ rpm_spec_get_buildconflicts(VALUE spec)
 	rpmtdFree(flagtd);
 
 	return bc;
+#endif
 }
 
 VALUE

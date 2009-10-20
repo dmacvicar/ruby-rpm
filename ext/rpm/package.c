@@ -107,15 +107,15 @@ package_s_create(VALUE klass, VALUE name, VALUE version)
 static rpmRC read_header_from_file(FD_t fd, const char *filename, Header *hdr)
 {
 	rpmRC rc;
-#if RPM_VERSION_CODE >= RPM_VERSION(4,6,0)
-	rpmts ts = rpmtsCreate();
-	rc = rpmReadPackageFile(ts, fd, filename, hdr);
-	rpmtsFree(ts);
-#else
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
     /* filename is ignored */
     Header sigs;
 	rc = rpmReadPackageInfo(fd, &sigs, hdr);
     headerFree(sigs);
+#else
+	rpmts ts = rpmtsCreate();
+	rc = rpmReadPackageFile(ts, fd, filename, hdr);
+	rpmtsFree(ts);
 #endif
     return rc;
 }
