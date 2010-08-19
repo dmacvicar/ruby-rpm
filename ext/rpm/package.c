@@ -50,7 +50,7 @@ package_free(Header hdr)
 	headerFree(hdr);
 }
 
-static VALUE inline
+inline static VALUE
 package_new_from_header(VALUE klass, Header hdr)
 {
 	VALUE p;
@@ -93,9 +93,9 @@ package_s_create(VALUE klass, VALUE name, VALUE version)
 	}
 
 	hdr = headerNew();
-        headerAddEntry(hdr,RPMTAG_NAME,RPM_STRING_TYPE,RSTRING(name)->ptr,1);
-        headerAddEntry(hdr,RPMTAG_VERSION,RPM_STRING_TYPE,RSTRING(rpm_version_get_v(version))->ptr,1);
-        headerAddEntry(hdr,RPMTAG_RELEASE,RPM_STRING_TYPE,RSTRING(rpm_version_get_r(version))->ptr,1);
+        headerAddEntry(hdr,RPMTAG_NAME,RPM_STRING_TYPE,RSTRING_PTR(name),1);
+        headerAddEntry(hdr,RPMTAG_VERSION,RPM_STRING_TYPE,RSTRING_PTR(rpm_version_get_v(version)),1);
+        headerAddEntry(hdr,RPMTAG_RELEASE,RPM_STRING_TYPE,RSTRING_PTR(rpm_version_get_r(version)),1);
         if(!NIL_P(rpm_version_get_e(version))){
 		int e = NUM2INT(rpm_version_get_e(version));
         	headerAddEntry(hdr,RPMTAG_EPOCH,RPM_INT32_TYPE,&e,1);
@@ -133,13 +133,13 @@ package_s_open(VALUE klass, VALUE filename)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 
-	fd = Fopen(RSTRING(filename)->ptr, "r");
+	fd = Fopen(RSTRING_PTR((filename)), "r");
 	if (!fd) {
 		rb_raise(rb_eRuntimeError, "can not open file %s",
-				 RSTRING(filename)->ptr);
+				 RSTRING_PTR((filename)));
 	}
 
-    rc = read_header_from_file(fd, RSTRING(filename)->ptr, &hdr);
+    rc = read_header_from_file(fd, RSTRING_PTR((filename)), &hdr);
 	Fclose(fd);
 
 	switch (rc) {
@@ -188,12 +188,12 @@ package_s_load(VALUE klass, VALUE str)
 	Check_Type(str, T_STRING);
 
 	temp = ruby_rpm_make_temp_name();
-	fd = Fopen(RSTRING(temp)->ptr, "wb+");
-	Fwrite(RSTRING(str)->ptr, RSTRING(str)->len, 1, fd);
+	fd = Fopen(RSTRING_PTR((temp)), "wb+");
+	Fwrite(RSTRING_PTR((str)), RSTRING_LEN(str), 1, fd);
 	Fseek(fd, 0, SEEK_SET);
 	hdr = headerRead(fd, HEADER_MAGIC_YES);
 	Fclose(fd);
-	unlink(RSTRING(temp)->ptr);
+	unlink(RSTRING_PTR((temp)));
 
 	if (!hdr) {
 		rb_raise(rb_eArgError, "unable load RPM::Package");
@@ -254,8 +254,8 @@ rpm_package_add_dependency(VALUE pkg,VALUE dep)
 	versiontag = NUM2INT(rpm_dependency_get_versiontag(dep));
 	flagstag = NUM2INT(rpm_dependency_get_flagstag(dep));
 
-	name = RSTRING(rpm_dependency_get_name(dep))->ptr;
-	evr = RSTRING(rpm_version_to_vre(rpm_dependency_get_version(dep)))->ptr;
+	name = RSTRING_PTR((rpm_dependency_get_name(dep)));
+	evr = RSTRING_PTR((rpm_version_to_vre(rpm_dependency_get_version(dep))));
 	flag = NUM2INT(rpm_dependency_get_flags(dep));
 
 	headerAddOrAppendEntry(RPM_HEADER(pkg),nametag,RPM_STRING_ARRAY_TYPE,&name,1);
@@ -288,7 +288,7 @@ rpm_package_add_string_array(VALUE pkg,VALUE tag,VALUE val)
 	if ((TYPE(val) != T_STRING))  {
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
-	headerAddOrAppendEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_STRING_ARRAY_TYPE,&RSTRING(val)->ptr,1);
+	headerAddOrAppendEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_STRING_ARRAY_TYPE,RARRAY_PTR(val),1);
   return Qnil;
 }
 
@@ -298,7 +298,7 @@ rpm_package_add_string(VALUE pkg,VALUE tag,VALUE val)
 	if ((TYPE(val) != T_STRING))  {
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
-	headerAddEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_STRING_TYPE,RSTRING(val)->ptr,1);
+	headerAddEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_STRING_TYPE,RSTRING_PTR((val)),1);
   return Qnil;
 }
 
@@ -308,7 +308,7 @@ rpm_package_add_binary(VALUE pkg,VALUE tag,VALUE val)
 	if ((TYPE(val) != T_STRING))  {
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
-	headerAddEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_BIN_TYPE,RSTRING(val)->ptr,RSTRING(val)->len);
+	headerAddEntry(RPM_HEADER(pkg),NUM2INT(tag),RPM_BIN_TYPE,RSTRING_PTR((val)),RSTRING_LEN(val));
   return Qnil;
 }
 
@@ -700,35 +700,35 @@ rpm_package_get_files(VALUE pkg)
 
 	files = rb_ary_new();
 	if (!NIL_P(basenames)) {
-		for (i = 0; i < RARRAY(basenames)->len; i++) {
+		for (i = 0; i < RARRAY_LEN(basenames); i++) {
 			static char buf[BUFSIZ];
 			VALUE file;
 			buf[0] = '\0';
-			stpcpy(stpcpy(buf, RSTRING(RARRAY(dirnames)->ptr[
-				           NUM2INT(RARRAY(diridxs)->ptr[i])])->ptr),
-					   RSTRING(RARRAY(basenames)->ptr[i])->ptr);
+			stpcpy(stpcpy(buf, RSTRING_PTR((RARRAY_PTR(dirnames))[
+				           NUM2INT(RARRAY_PTR(diridxs)[i])])),
+					   RSTRING_PTR((RARRAY_PTR(basenames)[i])));
 			file = rpm_file_new(
 				buf,
-				RSTRING(RARRAY(md5list)->ptr[i])->ptr,
+				RSTRING_PTR((RARRAY_PTR(md5list)[i])),
 				(NIL_P(linklist)
 				 ? NULL
-				 : RSTRING(RARRAY(linklist)->ptr[i])->ptr),
-				NUM2UINT(RARRAY(sizelist)->ptr[i]),
-				NUM2INT(RARRAY(mtimelist)->ptr[i]),
+				 : RSTRING_PTR((RARRAY_PTR(linklist)[i]))),
+				NUM2UINT(RARRAY_PTR(sizelist)[i]),
+				NUM2INT(RARRAY_PTR(mtimelist)[i]),
 				(NIL_P(ownerlist)
 				 ? NULL
-				 : RSTRING(RARRAY(ownerlist)->ptr[i])->ptr),
+				 : RSTRING_PTR((RARRAY_PTR(ownerlist)[i]))),
 				(NIL_P(grouplist)
 				 ? NULL
-				 : RSTRING(RARRAY(grouplist)->ptr[i])->ptr),
-				NUM2UINT(RARRAY(rdevlist)->ptr[i]),
-				NUM2UINT(RARRAY(modelist)->ptr[i]),
+				 : RSTRING_PTR((RARRAY_PTR(grouplist)[i]))),
+				NUM2UINT(RARRAY_PTR(rdevlist)[i]),
+				NUM2UINT(RARRAY_PTR(modelist)[i]),
 				(NIL_P(flaglist)
 				 ? RPMFILE_NONE
-				 : NUM2INT(RARRAY(flaglist)->ptr[i])),
+				 : NUM2INT(RARRAY_PTR(flaglist)[i])),
 				(NIL_P(statelist)
 				 ? RPMFILE_STATE_NORMAL
-				 : NUM2INT(RARRAY(statelist)->ptr[i])));
+				 : NUM2INT(RARRAY_PTR(statelist)[i])));
 			rb_ary_push(files, file);
 		}
 	}
@@ -925,7 +925,7 @@ rpm_package_dump(VALUE pkg)
 	char* buf;
 
 	temp = ruby_rpm_make_temp_name();
-	fd = Fopen(RSTRING(temp)->ptr, "wb+");
+	fd = Fopen(RSTRING_PTR((temp)), "wb+");
 	headerWrite(fd, RPM_HEADER(pkg), HEADER_MAGIC_YES);
 	size = fdSize(fd);
 
@@ -934,7 +934,7 @@ rpm_package_dump(VALUE pkg)
 	munmap(buf, size);
 
 	Fclose(fd);
-	unlink(RSTRING(temp)->ptr);
+	unlink(RSTRING_PTR((temp)));
 
 	return dump;
 }
@@ -956,16 +956,16 @@ rpm_package_to_s(VALUE pkg)
 	if (NIL_P(name)) {
 		buf[0] = '\0';
 	} else if (NIL_P(ver)) {
-		snprintf(buf, BUFSIZ, "%s", RSTRING(name)->ptr);
+		snprintf(buf, BUFSIZ, "%s", RSTRING_PTR((name)));
 	} else if (NIL_P(arch)) {
 		snprintf(buf, BUFSIZ, "%s-%s",
-				RSTRING(name)->ptr,
-				RSTRING(rpm_version_to_s(ver))->ptr);
+				RSTRING_PTR((name)),
+				RSTRING_PTR((rpm_version_to_s(ver))));
 	} else {
 		snprintf(buf, BUFSIZ, "%s-%s-%s",
-				RSTRING(name)->ptr,
-				RSTRING(rpm_version_to_s(ver))->ptr,
-				RSTRING(arch)->ptr);
+				RSTRING_PTR((name)),
+				RSTRING_PTR((rpm_version_to_s(ver))),
+				RSTRING_PTR((arch)));
 	}
 
 	return rb_str_new2(buf);
@@ -982,11 +982,11 @@ rpm_package_inspect(VALUE pkg)
 		buf[0] = '\0';
 	} else if (NIL_P(ver)) {
 		snprintf(buf, BUFSIZ, "#<RPM::Package name=%s>",
-				RSTRING(rb_inspect(name))->ptr);
+				RSTRING_PTR((rb_inspect(name))));
 	} else {
 		snprintf(buf, BUFSIZ, "#<RPM::Package name=%s, version=%s>",
-				RSTRING(rb_inspect(name))->ptr,
-				RSTRING(rb_inspect(ver))->ptr);
+				RSTRING_PTR((rb_inspect(name))),
+				RSTRING_PTR((rb_inspect(ver))));
 	}
 
 	return rb_str_new2(buf);

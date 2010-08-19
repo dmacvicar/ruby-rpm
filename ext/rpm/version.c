@@ -98,14 +98,14 @@ version_initialize(int argc, VALUE* argv, VALUE ver)
 		if (TYPE(argv[0]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type");
 		}
-		version_parse(RSTRING(argv[0])->ptr, &v, &r, &e);
+		version_parse(RSTRING_PTR(argv[0]), &v, &r, &e);
 		break;
 
 	case 2:
 		if (TYPE(argv[0]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type");
 		}
-		version_parse(RSTRING(argv[0])->ptr, &v, &r, &e);
+		version_parse(RSTRING_PTR(argv[0]), &v, &r, &e);
 		if (e != Qnil) {
 			rb_raise(rb_eTypeError, "illegal argument value");
 		}
@@ -117,8 +117,8 @@ version_initialize(int argc, VALUE* argv, VALUE ver)
 			|| TYPE(argv[1]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type");
 		}
-		v = rb_str_new2(RSTRING(argv[0])->ptr);
-		r = rb_str_new2(RSTRING(argv[1])->ptr);
+		v = rb_str_new2(RSTRING_PTR(argv[0]));
+		r = rb_str_new2(RSTRING_PTR(argv[1]));
 		e = rb_Integer(argv[2]);
 		break;
 
@@ -216,7 +216,7 @@ rpm_version_cmp(VALUE ver, VALUE other)
 	else if (NIL_P(vv) && !NIL_P(ov))	/* XXX */
 		return INT2FIX(-1);
 	else if (!NIL_P(vv) && !NIL_P(ov)) {
-		sense = rpmvercmp(RSTRING(vv)->ptr, RSTRING(ov)->ptr);
+		sense = rpmvercmp(RSTRING_PTR(vv), RSTRING_PTR(ov));
 		if (sense)
 			return INT2FIX(sense);
 	}
@@ -228,7 +228,7 @@ rpm_version_cmp(VALUE ver, VALUE other)
 	else if (NIL_P(vr) && !NIL_P(or))
 		return INT2FIX(-1);
 	else if (!NIL_P(vr) && !NIL_P(or)) {
-		sense = rpmvercmp(RSTRING(vr)->ptr, RSTRING(or)->ptr);
+		sense = rpmvercmp(RSTRING_PTR(vr), RSTRING_PTR(or));
 	}
 	return INT2FIX(sense);
 }
@@ -271,10 +271,10 @@ rpm_version_to_s(VALUE ver)
 	VALUE v, r;
 	v = rb_ivar_get(ver, id_v);
 	r = rb_ivar_get(ver, id_r);
-	strcpy(p, RSTRING(v)->ptr);
+	strcpy(p, RSTRING_PTR(v));
 	if (!NIL_P(r)) {
 		strcat(p, "-");
-		strcat(p, RSTRING(r)->ptr);
+		strcat(p, RSTRING_PTR(r));
 	}
 	return rb_str_new2(buf);
 }
@@ -292,10 +292,10 @@ rpm_version_to_vre(VALUE ver)
 		snprintf(buf,BUFSIZ,"%ld:", (long) NUM2INT(e));
 		p += strlen(buf);
         }
-	strcpy(p, RSTRING(v)->ptr);
+	strcpy(p, RSTRING_PTR(v));
 	if (!NIL_P(r)) {
 		strcat(p, "-");
-		strcat(p, RSTRING(r)->ptr);
+		strcat(p, RSTRING_PTR(r));
 	}
 	return rb_str_new2(buf);
 }
@@ -310,9 +310,9 @@ rpm_version_inspect(VALUE ver)
 	e = rb_ivar_get(ver, id_e);
 
 	if (!NIL_P(e)) {
-		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%ld>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr, (long) NUM2INT(e));
+		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s, e=%ld>", RSTRING_PTR(rb_inspect(v)), RSTRING_PTR(rb_inspect(r)), (long) NUM2INT(e));
         } else {
-		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s>", RSTRING(rb_inspect(v))->ptr, RSTRING(rb_inspect(r))->ptr);
+		snprintf(buf, BUFSIZ, "#<RPM::Version v=%s, r=%s>", RSTRING_PTR(rb_inspect(v)), RSTRING_PTR(rb_inspect(r)));
 	}
 
 	return rb_str_new2(buf);

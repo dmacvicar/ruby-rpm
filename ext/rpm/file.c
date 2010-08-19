@@ -36,7 +36,7 @@ file_initialize(VALUE file, VALUE path, VALUE md5sum, VALUE link_to,
 	}
 	rb_ivar_set(file, id_path, path);
 	rb_ivar_set(file, id_md5sum, md5sum);
-	rb_ivar_set(file, id_link_to, (!NIL_P(link_to) && RSTRING(link_to)->len) ? link_to : Qnil);
+	rb_ivar_set(file, id_link_to, (!NIL_P(link_to) && RSTRING_LEN(link_to)) ? link_to : Qnil);
 	rb_ivar_set(file, id_size, rb_Integer(size));
 	if (rb_obj_is_kind_of(mtime, rb_cTime) == Qfalse) {
 		mtime = rb_time_new(NUM2INT(rb_Integer(mtime)), (time_t)0);

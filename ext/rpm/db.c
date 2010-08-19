@@ -71,7 +71,7 @@ db_s_open(int argc, VALUE* argv, VALUE obj)
 			if (TYPE(argv[1]) != T_STRING) {
 				rb_raise(rb_eTypeError, "illegal argument type");
 			}
-			root = RSTRING(argv[1])->ptr;
+			root = RSTRING_PTR(argv[1]);
 		}
 		writable = RTEST(argv[0]);
 		break;
@@ -85,8 +85,8 @@ db_s_open(int argc, VALUE* argv, VALUE obj)
 	if (rpmdbOpen(root, &(rdb->db), writable ? O_RDWR | O_CREAT : O_RDONLY, 0644)) {
 		free(rdb);
 		rb_raise(rb_eRuntimeError, "can not open database in %s",
-				 RSTRING(rb_str_concat(rb_str_new2(root),
-			         rb_str_new2("/var/lib/rpm")))->ptr);
+				 RSTRING_PTR(rb_str_concat(rb_str_new2(root),
+			         rb_str_new2("/var/lib/rpm"))));
 	}
 
 	rdb->ref_count = 0;
@@ -121,7 +121,7 @@ db_s_init(int argc, VALUE* argv, VALUE obj)
 		if (TYPE(argv[0]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type");
 		}
-		root = RSTRING(argv[0])->ptr;
+		root = RSTRING_PTR(argv[0]);
 		if (argc == 2) {
 			writable = RTEST(argv[1]);
 		}
@@ -133,8 +133,8 @@ db_s_init(int argc, VALUE* argv, VALUE obj)
 
 	if (rpmdbInit(root, writable ? O_RDWR | O_CREAT : O_RDONLY)) {
 		rb_raise(rb_eRuntimeError, "can not initialize database in %s",
-				 RSTRING(rb_str_concat(rb_str_new2(root),
-									   rb_str_new2("/var/lib/rpm")))->ptr);
+				 RSTRING_PTR(rb_str_concat(rb_str_new2(root),
+									   rb_str_new2("/var/lib/rpm"))));
 	}
 
 	return Qnil;
@@ -164,7 +164,7 @@ db_s_rebuild(int argc, VALUE* argv, VALUE obj)
 			if (TYPE(argv[0]) != T_STRING) {
 				rb_raise(rb_eTypeError, "illegal argument type");
 			}
-			root = RSTRING(argv[0])->ptr;
+			root = RSTRING_PTR(argv[0]);
 		}
 		break;
 
@@ -180,8 +180,8 @@ db_s_rebuild(int argc, VALUE* argv, VALUE obj)
 #endif
 	if (ret) {
 		rb_raise(rb_eRuntimeError, "can not rebuild database in %s",
-				 RSTRING(rb_str_concat(rb_str_new2(root),
-									   rb_str_new2("/var/lib/rpm")))->ptr);
+				 RSTRING_PTR(rb_str_concat(rb_str_new2(root),
+									   rb_str_new2("/var/lib/rpm"))));
 	}
 
 	return Qnil;
@@ -311,7 +311,7 @@ rpm_db_transaction(int argc, VALUE* argv, VALUE db)
 		if (TYPE(argv[0]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type");
 		}
-		root = RSTRING(argv[0])->ptr;
+		root = RSTRING_PTR(argv[0]);
 		break;
 
 	default:
@@ -393,10 +393,10 @@ rpm_transaction_install(VALUE trans, VALUE pkg, VALUE key)
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	rpmtransAddPackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg), NULL,
-					   RSTRING(key)->ptr, 0, NULL);
+					   RSTRING_PTR(key), 0, NULL);
 #else
 	rpmtsAddInstallElement(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
-					   RSTRING(key)->ptr, 0, NULL);
+					   RSTRING_PTR(key), 0, NULL);
 #endif
 
 	return Qnil;
@@ -423,10 +423,10 @@ rpm_transaction_upgrade(VALUE trans, VALUE pkg, VALUE key)
 	rb_ary_push(keys, key);
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	rpmtransAddPackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg), NULL,
-					   RSTRING(key)->ptr, 1, NULL);
+					   RSTRING_PTR(key), 1, NULL);
 #else
 	rpmtsAddInstallElement(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
-					   RSTRING(key)->ptr, 1, NULL);
+					   RSTRING_PTR(key), 1, NULL);
 #endif
 
 	return Qnil;
@@ -455,7 +455,7 @@ rpm_transaction_available(VALUE trans, VALUE pkg, VALUE key)
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	rpmtransAvailablePackage(RPM_TRANSACTION(trans), RPM_HEADER(pkg),
-					   RSTRING(key)->ptr);
+					   RSTRING_PTR(key));
 #else
     rb_raise(rb_eNotImpError, "need rpmtsAvailablePackage");
     // FIXME: What is the analog for rpmtsAvailablePackage
@@ -571,7 +571,7 @@ package_new_from_NEVR(const char* nevr)
 {
 	char *name = NULL;
 	char *evr = NULL;
-	char *end = NULL;
+    char *end = NULL;
 	char *tmp_nevr = NULL;
 	VALUE package = Qnil;
 	int i=0;
@@ -591,11 +591,11 @@ package_new_from_NEVR(const char* nevr)
 	if ( i==2 ) {
 		*end = '\0'; evr = end + 1;
 	} else {
-		evr = "";
+		evr = NULL;
 	}
 
 	package = rpm_package_new_from_N_EVR(rb_str_new2(name),
-					     version_new_from_EVR(evr));
+                                         version_new_from_EVR(evr ? evr : ""));
 	free(tmp_nevr);
 	return package;
 }
@@ -667,7 +667,7 @@ rpm_transaction_check(VALUE trans)
 
 			char *name = buf+2;
 			char *relation = NULL;
-			char *evr = "";
+			char *evr = NULL;
 			rpmsenseFlags sense_flags = 0;
 
 			end = strchr ( name, ' ');
@@ -691,7 +691,7 @@ rpm_transaction_check(VALUE trans)
 			}
 
 			dep = rpm_require_new(name,
-					  rpm_version_new(evr),
+                                  rpm_version_new(evr ? evr : ""),
 					  sense_flags,
 					  package_new_from_NEVR(
 						rpmProblemGetPkgNEVR(p)
@@ -1049,8 +1049,8 @@ rpm_db_init_iterator(VALUE db, VALUE key, VALUE val)
 
 	mi = ALLOC_N(rpm_mi_t,1);
 	if ((mi->mi = rpmdbInitIterator(RPM_DB(db), NUM2INT(rb_Integer(key)),
-						   NIL_P(val) ? NULL : RSTRING(val)->ptr,
-                           NIL_P(val) ? 0 : RSTRING(val)->len))){
+						   NIL_P(val) ? NULL : RSTRING_PTR(val),
+                           NIL_P(val) ? 0 : RSTRING_LEN(val)))){
 		mi->db = (rpm_db_t*)DATA_PTR(db);
 		db_ref(mi->db);
 		return Data_Wrap_Struct(rpm_cMatchIterator, NULL, mi_free, mi);
@@ -1092,7 +1092,7 @@ rpm_mi_set_iterator_re(VALUE mi,VALUE tag, VALUE mode, VALUE re)
 	if (TYPE(re) != T_STRING)
 		rb_raise(rb_eTypeError, "illegal argument type");
 
-	rpmdbSetIteratorRE(RPM_MI(mi),NUM2INT(tag),NUM2INT(mode),RSTRING(re)->ptr);
+	rpmdbSetIteratorRE(RPM_MI(mi),NUM2INT(tag),NUM2INT(mode),RSTRING_PTR(re));
 	return mi;
 }
 
@@ -1104,16 +1104,16 @@ rpm_mi_set_iterator_version(VALUE mi, VALUE version)
 	if (rb_obj_is_kind_of(version, rpm_cVersion) == Qfalse)
 		rb_raise(rb_eTypeError, "illegal argument type");
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
-	rpmdbSetIteratorVersion(RPM_MI(mi),RSTRING(rpm_version_get_v(version))->ptr);
+	rpmdbSetIteratorVersion(RPM_MI(mi),RSTRING_PTR(rpm_version_get_v(version)));
 #else
-	rpmdbSetIteratorRE(RPM_MI(mi),RPMTAG_VERSION,RPMMIRE_DEFAULT,RSTRING(rpm_version_get_v(version))->ptr);
+	rpmdbSetIteratorRE(RPM_MI(mi),RPMTAG_VERSION,RPMMIRE_DEFAULT,RSTRING_PTR(rpm_version_get_v(version)));
 #endif
 	r = rpm_version_get_r(version);
 	if(!NIL_P(r)){
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
-		rpmdbSetIteratorRelease(RPM_MI(mi),RSTRING(r)->ptr);
+		rpmdbSetIteratorRelease(RPM_MI(mi),RSTRING_PTR(r));
 #else
-		rpmdbSetIteratorRE(RPM_MI(mi),RPMTAG_RELEASE,RPMMIRE_DEFAULT,RSTRING(r)->ptr);
+		rpmdbSetIteratorRE(RPM_MI(mi),RPMTAG_RELEASE,RPMMIRE_DEFAULT,RSTRING_PTR(r));
 #endif
 	}
 	return mi;

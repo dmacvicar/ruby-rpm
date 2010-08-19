@@ -20,7 +20,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <st.h>
 
 #include <rpm/rpmcli.h>
 #include <rpm/rpmlib.h>
@@ -115,7 +114,7 @@ void Init_rpm_spec(void);
 void Init_rpm_version(void);
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
-static void inline
+inline static void
 get_entry(Header hdr, rpmTag tag, rpmTagType* type, void** ptr)
 {
 	if (!headerGetEntryMinMemory(
@@ -124,14 +123,14 @@ get_entry(Header hdr, rpmTag tag, rpmTagType* type, void** ptr)
 	}
 }
 #else
-static void inline
+inline static void
 get_entry(Header hdr, rpmTag tag, rpmtd tc)
 {
 	headerGet(hdr, tag, tc, HEADERGET_MINMEM);
 }
 #endif
 
-static void inline
+inline static void
 release_entry(rpmTagType type, void* ptr)
 {
 	ptr = headerFreeData(ptr, type);

@@ -106,9 +106,9 @@ rpm_source_get_filename(VALUE src)
 
 	if (NIL_P(fn)) {
 		VALUE full = rb_ivar_get(src, id_full);
-		const char* p = strrchr(RSTRING(full)->ptr, '/');
+		const char* p = strrchr(RSTRING_PTR(full), '/');
 		if (p == NULL) {
-			p = RSTRING(full)->ptr;
+			p = RSTRING_PTR(full);
 		} else {
 			p++;
 		}

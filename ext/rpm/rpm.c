@@ -27,7 +27,7 @@ m_aref(VALUE m, VALUE name)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 
-	sprintf(buf, "%%{%s}", RSTRING(name)->ptr);
+	sprintf(buf, "%%{%s}", RSTRING_PTR(name));
 	tmp = strdup(buf);
 	expandMacros(NULL, NULL, buf, BUFSIZ);
 	if (strcmp(tmp, buf) == 0) {
@@ -54,9 +54,9 @@ m_aset(VALUE m, VALUE name, VALUE val)
 		rb_raise(rb_eTypeError, "illegal argument type(s)");
 	}
 	if (val == Qnil) {
-		delMacro(NULL, RSTRING(name)->ptr);
+		delMacro(NULL, RSTRING_PTR(name));
 	} else {
-		addMacro(NULL, RSTRING(name)->ptr, NULL, RSTRING(val)->ptr, RMIL_DEFAULT);
+		addMacro(NULL, RSTRING_PTR(name), NULL, RSTRING_PTR(val), RMIL_DEFAULT);
 	}
 	return Qnil;
 }
@@ -82,7 +82,7 @@ m_readrc(int argc, VALUE* argv, VALUE m)
 		if (TYPE(argv[i]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type(s)");
 		}
-		strcat(buf, RSTRING(argv[i])->ptr);
+		strcat(buf, RSTRING_PTR(argv[i]));
 		strcat(buf, ":");
 	}
 	rpmFreeMacros(NULL);
@@ -116,7 +116,7 @@ m_init_macros(int argc, VALUE* argv, VALUE m)
 		if (TYPE(argv[i]) != T_STRING) {
 			rb_raise(rb_eTypeError, "illegal argument type(s)");
 		}
-		strcat(buf, RSTRING(argv[i])->ptr);
+		strcat(buf, RSTRING_PTR(argv[i]));
 		strcat(buf, ":");
 	}
 	rpmInitMacros(NULL, buf);
@@ -186,8 +186,14 @@ ruby_rpm_make_temp_name(void)
 void
 Init_rpm(void)
 {
-	char* temp;
+	char *temp;
+    VALUE rbtmpdir;
+    
+    rb_require("tmpdir");
 
+    rbtmpdir = rb_funcall(rb_const_get(rb_cObject,
+                                       rb_intern("Dir")), 
+                          rb_intern("tmpdir"), 0);
 	rpm_mRPM = rb_define_module("RPM");
 
 	rb_define_const(rpm_mRPM, "VERSION", rb_str_new2(RUBY_RPM_VERSION));
@@ -639,22 +645,7 @@ Init_rpm(void)
 	Init_rpm_version();
 	Init_rpm_MatchIterator();
 
-	temp = getenv("TMPDIR");
-	if (!temp) {
-		temp = getenv("TMP");
-	}
-	if (!temp) {
-		temp = getenv("TEMP");
-	}
-	if (!temp) {
-		temp = "/tmp";
-	} else {
-		char * tmpdir;
-		tmpdir = strchr(temp, '=');
-		if(tmpdir) temp = tmpdir + 1;
-	}
-
-	ruby_rpm_temp_format = rb_str_new2(temp);
+	ruby_rpm_temp_format = rbtmpdir;
 	temp = ALLOCA_N(char, 32);
 	sprintf(temp, "/ruby-rpm.%u.%%d", getpid());
 	rb_str_concat(ruby_rpm_temp_format, rb_str_new2(temp));

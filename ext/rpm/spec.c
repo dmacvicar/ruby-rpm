@@ -47,26 +47,26 @@ spec_s_open(VALUE klass, VALUE filename)
 	}
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
-	switch (parseSpec(&rspec, RSTRING(filename)->ptr, "/", NULL, 0, "", NULL, 1, 1)) {
+	switch (parseSpec(&rspec, RSTRING_PTR(filename), "/", NULL, 0, "", NULL, 1, 1)) {
 	case 0:
 		if (rspec != NULL) {
 			break;
 		}
 
 	default:
-		rb_raise(rb_eRuntimeError, "specfile `%s' parsing failed", RSTRING(filename)->ptr);
+		rb_raise(rb_eRuntimeError, "specfile `%s' parsing failed", RSTRING_PTR(filename));
 	}
 	return Data_Wrap_Struct(klass, NULL, spec_free, rspec);
 #else
 	ts = rpmtsCreate();
-	switch (parseSpec(ts, RSTRING(filename)->ptr, "/", NULL, 0, "", NULL, 1, 1)) {
+	switch (parseSpec(ts, RSTRING_PTR(filename), "/", NULL, 0, "", NULL, 1, 1)) {
 	case 0:
 		if (ts != NULL) {
 			break;
 		}
 
 	default:
-		rb_raise(rb_eRuntimeError, "specfile `%s' parsing failed", RSTRING(filename)->ptr);
+		rb_raise(rb_eRuntimeError, "specfile `%s' parsing failed", RSTRING_PTR(filename));
 	}
 	return Data_Wrap_Struct(klass, NULL, ts_free, ts);
 #endif
@@ -373,7 +373,7 @@ rpm_spec_expand_macros(VALUE spec, VALUE name)
 		rb_raise(rb_eTypeError, "illegal argument type");
 	}
 
-	sprintf(buf, "%%{%s}", RSTRING(name)->ptr);
+	sprintf(buf, "%%{%s}", RSTRING_PTR(name));
 	tmp = strdup(buf);
 	expandMacros(RPM_SPEC(spec), RPM_SPEC(spec)->macros, buf, BUFSIZ);
 	if (strcmp(tmp, buf) == 0) {

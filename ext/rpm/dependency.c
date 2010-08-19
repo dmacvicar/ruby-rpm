@@ -179,17 +179,17 @@ rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 		return Qfalse;
 	}
 
-	name = RSTRING(rb_ivar_get(dep,id_name))->ptr;
-	svre = RSTRING(rpm_version_to_vre(rb_ivar_get(dep,id_ver)))->ptr;
+	name = RSTRING_PTR(rb_ivar_get(dep,id_name));
+	svre = RSTRING_PTR(rpm_version_to_vre(rb_ivar_get(dep,id_ver)));
     sflag = NUM2INT(rb_ivar_get(dep, id_flags));
 
 	if (rb_obj_is_kind_of(other,rpm_cDependency) == Qtrue){
 		oflag = NUM2INT(rb_ivar_get(other, id_flags));
-        oname = RSTRING(rb_ivar_get(other, id_name))->ptr;
-		ovre = RSTRING(rpm_version_to_vre(rb_ivar_get(other,id_ver)))->ptr;
+        oname = RSTRING_PTR(rb_ivar_get(other, id_name));
+		ovre = RSTRING_PTR(rpm_version_to_vre(rb_ivar_get(other,id_ver)));
 		other = rb_ivar_get(other,id_ver);
 	} else if (rb_obj_is_kind_of(other,rpm_cVersion) == Qtrue){
-		ovre = RSTRING(rpm_version_to_vre(other))->ptr;
+		ovre = RSTRING_PTR(rpm_version_to_vre(other));
         oname = name;
 		if (!*ovre)
 			oflag = 0;
