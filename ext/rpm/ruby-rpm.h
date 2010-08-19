@@ -11,8 +11,6 @@
 
 #include <ruby.h>
 
-#define RUBY_RPM_VERSION "1.2.4"
-
 extern VALUE rpm_mRPM;
 extern VALUE rpm_cConflict;
 extern VALUE rpm_cDB;

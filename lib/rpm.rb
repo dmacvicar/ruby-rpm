@@ -7,6 +7,7 @@
 
 # native
 require 'rpm.so'
+require 'rpm/version'
 
 module RPM
 

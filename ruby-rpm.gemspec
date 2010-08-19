@@ -5,7 +5,7 @@ require "rpm/version"
 
 Gem::Specification.new do |s|
     s.name = RPM::PKG_NAME
-    s.version = RPM::PKG_VERSION
+    s.version = RPM::VERSION
     s.email = "ruby-rpm-devel@rubyforge.org"
     s.homepage = "http://gitorious.org/ruby-rpm"
     s.summary = "Ruby bindings for RPM"

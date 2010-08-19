@@ -8,7 +8,7 @@ require "rpm/version"
 SPEC_FILE="spec/fedora/ruby-rpm.spec"
 
 task :install => :build do
-  system "sudo gem install ruby-rpm-#{RPM::PKG_VERSION}.gem"
+  system "sudo gem install ruby-rpm-#{RPM::VERSION}.gem"
 end
 
 Rake::TestTask.new do |t|
@@ -29,7 +29,7 @@ rescue LoadError
   STDERR.puts "Install yard if you want prettier docs"
   Rake::RDocTask.new(:doc) do |rdoc|
     rdoc.rdoc_dir = "doc"
-    rdoc.title = "#{RPM::PKG_NAME} #{RPM::PKG_VERSION}"
+    rdoc.title = "#{RPM::PKG_NAME} #{RPM::VERSION}"
     extra_docs.each { |ex| rdoc.rdoc_files.include ex }
   end
 end
@@ -41,7 +41,7 @@ Rake::ExtensionTask.new('rpm')
 
 desc "Build (S)RPM for #{RPM::PKG_NAME}"
 task :rpm => [ :package ] do |t|
-  system("sed -i -e 's/^Version:.*$/Version: #{RPM::PKG_VERSION}/' #{SPEC_FILE}")
+  system("sed -i -e 's/^Version:.*$/Version: #{RPM::VERSION}/' #{SPEC_FILE}")
   Dir::chdir("pkg") do |dir|
     dir = File::expand_path(".")
     system("rpmbuild --define '_topdir #{dir}' --define '_sourcedir #{dir}' --define '_srcrpmdir #{dir}' --define '_rpmdir #{dir}' -ba ../#{SPEC_FILE} > rpmbuild.log 2>&1")

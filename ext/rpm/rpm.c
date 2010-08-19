@@ -196,8 +196,6 @@ Init_rpm(void)
                           rb_intern("tmpdir"), 0);
 	rpm_mRPM = rb_define_module("RPM");
 
-	rb_define_const(rpm_mRPM, "VERSION", rb_str_new2(RUBY_RPM_VERSION));
-
 #define DEF_LOG(name) \
 	rb_define_const(rpm_mRPM, "LOG_"#name, INT2NUM(RPMLOG_##name))
 	DEF_LOG(EMERG);
