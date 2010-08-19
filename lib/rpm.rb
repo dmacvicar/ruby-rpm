@@ -5,7 +5,8 @@
 
 ### $Id: rpm.rb 22 2004-03-29 03:42:35Z zaki $
 
-require 'rpmmodule'
+# native
+require 'rpm.so'
 
 module RPM
 

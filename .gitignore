@@ -1,0 +1,7 @@
+doc
+**/*.so
+.yardoc
+tmp
+.bundle
+**/*.o
+

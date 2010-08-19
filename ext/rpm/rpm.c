@@ -184,7 +184,7 @@ ruby_rpm_make_temp_name(void)
 }
 
 void
-Init_rpmmodule(void)
+Init_rpm(void)
 {
 	char* temp;
 

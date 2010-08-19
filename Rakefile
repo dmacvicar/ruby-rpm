@@ -1,111 +1,52 @@
 # Rakefile for ruby-rpm -*- ruby -*-
+$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 require 'rake/clean'
 require 'rake/testtask'
 require 'rake/gempackagetask'
+require "rpm/version"
 
-PKG_NAME='ruby-rpm'
-PKG_VERSION='1.2.4'
-
-EXT_CONF='ext/rpm/extconf.rb'
-MAKEFILE="ext/rpm/Makefile"
-RPM_MODULE="ext/rpm/rpmmodule.so"
 SPEC_FILE="spec/fedora/ruby-rpm.spec"
 
-#
-# Additional files for clean/clobber
-#
-
-CLEAN.include "**/*~"
-
-CLOBBER.include [ "config.save",
-                  "ext/**/*.o", RPM_MODULE,
-                  "ext/**/depend", "ext/**/mkmf.log", 
-                  MAKEFILE ]
-
-#
-# Build locally
-#
-# FIXME: We can't get rid of install.rb yet, since there's no way
-# to pass config options to extconf.rb
-file MAKEFILE => EXT_CONF do |t|
-    Dir::chdir(File::dirname(EXT_CONF)) do
-         unless sh "ruby #{File::basename(EXT_CONF)}"
-             $stderr.puts "Failed to run extconf"
-             break
-         end
-    end
-end
-file RPM_MODULE => MAKEFILE do |t|
-    Dir::chdir(File::dirname(EXT_CONF)) do
-         unless sh "make"
-             $stderr.puts "make failed"
-             break
-         end
-     end
-end
-desc "Build the native library"
-task :build => RPM_MODULE
-
-Rake::TestTask.new(:test) do |t|
-    t.test_files = FileList['tests/test*.rb'].exclude("tests/test_ts.rb")
-    t.libs = [ 'lib', 'ext/rpm' ]
-end
-task :test => :build
-
-#
-# Package tasks
-#
-
-PKG_FILES = FileList[
-  "Rakefile", "ChangeLog", "COPYING", "README", "NEWS",
-  "install.rb",
-  "doc/refm.rd.ja",
-  "lib/**/*.rb",
-  "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
-  "tests/**/*",
-  "spec/**/*"
-]
-
-SPEC = Gem::Specification.new do |s|
-    s.name = PKG_NAME
-    s.version = PKG_VERSION
-    s.email = "ruby-rpm-devel@rubyforge.org"
-    s.homepage = "http://rubyforge.org/projects/ruby-rpm/"
-    s.summary = "Ruby bindings for RPM"
-    s.files = PKG_FILES
-    s.test_file = "tests/runner.rb"
-    s.autorequire = "rpm"
-    s.required_ruby_version = '>= 1.8.1'
-    s.extensions = "ext/rpm/extconf.rb"
-    s.description = <<EOF
-Provides bindings for accessing RPM packages and databases from Ruby. It
-includes the low-level C API to talk to rpm as well as Ruby classes to
-model the various objects that RPM deals with (such as packages,
-dependencies, and files).
-EOF
+task :install => :build do
+  system "sudo gem install ruby-rpm-#{RPM::PKG_VERSION}.gem"
 end
 
-Rake::GemPackageTask.new(SPEC) do |pkg|
-    pkg.need_tar = true
-    pkg.need_zip = true
+Rake::TestTask.new do |t|
+  t.libs << File.expand_path('../test', __FILE__)
+  t.libs << File.expand_path('../', __FILE__)
+  t.test_files = FileList['test/test*.rb']
+  t.verbose = true
 end
 
-desc "Build (S)RPM for #{PKG_NAME}"
+extra_docs = ['README*', 'TODO*', 'CHANGELOG*']
+
+begin
+ require 'yard'
+  YARD::Rake::YardocTask.new(:doc) do |t|
+    t.files   = ['lib/**/*.rb', *extra_docs]
+  end
+rescue LoadError
+  STDERR.puts "Install yard if you want prettier docs"
+  Rake::RDocTask.new(:doc) do |rdoc|
+    rdoc.rdoc_dir = "doc"
+    rdoc.title = "#{RPM::PKG_NAME} #{RPM::PKG_VERSION}"
+    extra_docs.each { |ex| rdoc.rdoc_files.include ex }
+  end
+end
+
+task :default => [:compile, :doc, :test]
+gem 'rake-compiler', '>= 0.4.1'
+require 'rake/extensiontask'
+Rake::ExtensionTask.new('rpm')
+
+desc "Build (S)RPM for #{RPM::PKG_NAME}"
 task :rpm => [ :package ] do |t|
-    system("sed -i -e 's/^Version:.*$/Version: #{PKG_VERSION}/' #{SPEC_FILE}")
-    Dir::chdir("pkg") do |dir|
-        dir = File::expand_path(".")
-        system("rpmbuild --define '_topdir #{dir}' --define '_sourcedir #{dir}' --define '_srcrpmdir #{dir}' --define '_rpmdir #{dir}' -ba ../#{SPEC_FILE} > rpmbuild.log 2>&1")
-        if $? != 0
-            raise "rpmbuild failed"
-        end
+  system("sed -i -e 's/^Version:.*$/Version: #{RPM::PKG_VERSION}/' #{SPEC_FILE}")
+  Dir::chdir("pkg") do |dir|
+    dir = File::expand_path(".")
+    system("rpmbuild --define '_topdir #{dir}' --define '_sourcedir #{dir}' --define '_srcrpmdir #{dir}' --define '_rpmdir #{dir}' -ba ../#{SPEC_FILE} > rpmbuild.log 2>&1")
+    if $? != 0
+      raise "rpmbuild failed"
     end
-end
-
-desc "Release a version"
-task :dist => [ :rpm, :test ] do |t|
-    puts "svn commit -m 'Release #{PKG_VERSION}' #{SPEC_FILE}"
-    puts "svn cp -m 'Tag release #{PKG_VERSION}' svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/trunk svn+ssh://lutter@rubyforge.org/var/svn/ruby-rpm/tags/release-#{PKG_VERSION}"
-    puts "Upload files"
-    puts "Announce on rubyforge and freshmeat"
+  end
 end
