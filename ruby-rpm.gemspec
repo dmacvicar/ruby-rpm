@@ -22,6 +22,7 @@ EOF
 
   s.required_rubygems_version = ">= 1.3.6"
   s.add_development_dependency("rake-compiler", [">= 0"])
+  s.add_development_dependency("rdoc", [">= 0"])
   s.require_path = 'lib'
 
 end

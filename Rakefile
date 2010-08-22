@@ -3,6 +3,7 @@ $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 require 'rake/clean'
 require 'rake/testtask'
 require 'rake/gempackagetask'
+require 'rake/rdoctask'
 require "rpm/version"
 
 SPEC_FILE="spec/fedora/ruby-rpm.spec"
