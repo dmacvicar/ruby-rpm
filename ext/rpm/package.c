@@ -7,6 +7,7 @@
 /* $Id: package.c 45 2004-06-04 15:11:20Z kazuhiko $ */
 
 #include "private.h"
+#include <st.h>
 
 char *stpcpy( char *dest, const char *source );
 
