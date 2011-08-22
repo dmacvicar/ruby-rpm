@@ -9,7 +9,9 @@
 #include "private.h"
 #include <st.h>
 
+#ifndef stpcpy
 char *stpcpy( char *dest, const char *source );
+#endif
 
 VALUE rpm_cPackage;
 VALUE rpm_sChangeLog;
