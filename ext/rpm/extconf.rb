@@ -43,7 +43,6 @@ def check_db
 end
 
 def check_rpm
-  return false unless check_db
   # Set things up manually
   dir_config("rpm")
   $libs = append_library($libs, 'rpmdb') if rpm_version < rpm_version([4,6,0])
@@ -53,6 +52,7 @@ def check_rpm
     return true
   end
   if have_header('rpm/rpmlib.h') and
+      check_db and
       have_library('rpmio') and
       have_library('rpmbuild', 'getBuildTime') then
     true

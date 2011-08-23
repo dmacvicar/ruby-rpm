@@ -19,6 +19,11 @@ VALUE rpm_sChangeLog;
 static ID id_signature;
 struct st_table *tbl = NULL;
 
+#if RPM_VERSION(5,0,0) <= RPM_VERSION_CODE
+#define headerGetEntryMinMemory(hdr,tag,type,ptr,cnt) \
+        headerGetEntry(hdr,tag,type,(void**)ptr,cnt)
+#endif
+
 static VALUE
 package_clear_cache(VALUE klass){
 	st_free_table(tbl);
@@ -326,7 +331,7 @@ rpm_package_delete_tag(VALUE pkg, VALUE tag)
 	return val;
 }
 
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 VALUE
 rpm_package_aref(VALUE pkg, VALUE tag)
 {
@@ -740,7 +745,7 @@ rpm_package_get_files(VALUE pkg)
 	return files;
 }
 
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 VALUE
 rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALUE (*dependency_new)(const char*,VALUE,int,VALUE))
 {
@@ -840,7 +845,7 @@ rpm_package_get_obsoletes(VALUE pkg)
 	return rpm_package_get_dependency(pkg,RPMTAG_OBSOLETENAME,RPMTAG_OBSOLETEVERSION,RPMTAG_OBSOLETEFLAGS,rpm_obsolete_new);
 }
 
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 VALUE
 rpm_package_get_changelog(VALUE pkg)
 {

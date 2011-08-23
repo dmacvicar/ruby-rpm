@@ -175,10 +175,10 @@ db_s_rebuild(int argc, VALUE* argv, VALUE obj)
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	ret = rpmdbRebuild(root);
-#elif RPM_VERSION(5,0,0) <= RPM_VERSION_CODE
-	ret = rpmdbRebuild(root, NULL);
-#else
+#elif RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 	ret = rpmdbRebuild(root, NULL, NULL);
+#else
+	ret = rpmdbRebuild(root, NULL);
 #endif
 	if (ret) {
 		rb_raise(rb_eRuntimeError, "can not rebuild database in %s",

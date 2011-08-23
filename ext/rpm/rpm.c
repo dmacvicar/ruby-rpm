@@ -500,7 +500,9 @@ Init_rpm(void)
 	DEF_TRANS_FLAG(NOTRIGGERS);
 	DEF_TRANS_FLAG(NODOCS);
 	DEF_TRANS_FLAG(ALLFILES);
+#if RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 	DEF_TRANS_FLAG(KEEPOBSOLETE);
+#endif
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	DEF_TRANS_FLAG(MULTILIB);
 #endif
@@ -655,10 +657,14 @@ Init_rpm(void)
 
 	rpmReadConfigFiles(NULL, NULL);
 
-#if RPM_VERSION_CODE >= RPM_VERSION(4,4,8)
-	rpmInitMacros(NULL, rpmMacrofiles);
-#else
+#if RPM_VERSION_CODE < RPM_VERSION(4,4,8)
 	rpmInitMacros(NULL, macrofiles);
+#elif RPM_VERSION_CODE < RPM_VERSION(4,5,90)
+	rpmInitMacros(NULL, rpmMacrofiles);
+#elif RPM_VERSION_CODE < RPM_VERSION(5,0,0)
+	rpmInitMacros(NULL, macrofiles);
+#else
+	rpmInitMacros(NULL, rpmMacrofiles);
 #endif
 	rpmSetVerbosity(RPMLOG_EMERG);
 }
