@@ -24,7 +24,7 @@ extra_docs = ['README*', 'TODO*', 'CHANGELOG*']
 begin
  require 'yard'
   YARD::Rake::YardocTask.new(:doc) do |t|
-    t.files   = ['lib/**/*.rb', *extra_docs]
+    t.files   = ['lib/**/*.rb', 'ext/rpm/*.c', *extra_docs]
   end
 rescue LoadError
   STDERR.puts "Install yard if you want prettier docs"
