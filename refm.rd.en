@@ -1,0 +1,917 @@
+This is Google's cache of http://ruby-rpm.rubyforge.org/svn/trunk/doc/refm.rd.ja. It is a snapshot of the page as it appeared on 24 Aug 2011 20:43:58 GMT. The current page could have changed in the meantime. Learn more
+
+Text-only version
+
+# # # -*- RD -*-
+= Begin
+
+= Ruby / RPM Reference Manual
+
+        version 1.0.0
+        Copyright (C) 2002 Kenta MURATA <muraken@kondara.org>.
+
+Table of Contents ==
+
+* ((<RPM>))
+* ((<RPM::Version>))
+* ((<RPM::Source>))
+* ((<RPM::Patch>))
+* ((<RPM::Icon>))
+* ((<RPM::File>))
+* ((<RPM::Dependency>))
+* ((<RPM::Provide>))
+* ((<RPM::Require>))
+* ((<RPM::Conflict>))
+* ((<RPM::Obsolete>))
+* ((<RPM::Package>))
+* ((<RPM::ChangeLog>))
+* ((<RPM::Spec>))
+* ((<RPM::DB>))
+* ((<RPM::Transaction>))
+* ((<RPM::CallbackData>))
+* ((<RPM::Problem>))
+
+== RPM
+
+=== Constants
+
+--- RPM:: VERSION
+
+    Version of this extension.
+
+--- RPM:: LOG_EMERG
+--- RPM:: LOG_ALERT
+--- RPM:: LOG_CRIT
+--- RPM:: LOG_ERR
+--- RPM:: LOG_WARNING
+--- RPM:: LOG_NOTICE
+--- RPM:: LOG_INFO
+--- RPM:: LOG_DEBUG
+--- RPM:: MESS_DEBUG
+--- RPM:: MESS_VERBOSE
+--- RPM:: MESS_NORMAL
+--- RPM:: MESS_WARNING
+--- RPM:: MESS_ERROR
+--- RPM:: MESS_FATALERROR
+--- RPM:: MESS_QUIET
+
+    ((<RPM.verbosity=>)) To be specified in the message redundancy. Default
+    And RPM:: that is LOG_EMERG.
+
+--- RPM:: DBI_PACKAGES
+--- RPM:: DBI_DEPENDS
+--- RPM:: DBI_LABEL
+--- RPM:: DBI_ADDED
+--- RPM:: DBI_REMOVE
+--- RPM:: DBI_AVAILABLE
+--- RPM:: TAG_HEADERIMAGE
+--- RPM:: TAG_HEADERSIGNATURES
+--- RPM:: TAG_HEADERIMMUTABLE
+--- RPM:: TAG_HEADERREGIONS
+--- RPM:: TAG_HEADERI18NTABLE
+--- RPM:: TAG_SIGSIZE
+--- RPM:: TAG_SIGPGP
+--- RPM:: TAG_SIGMD5
+--- RPM:: TAG_SIGGPG
+--- RPM:: TAG_SHA1HEADER
+--- RPM:: TAG_NAME
+--- RPM:: TAG_VERSION
+--- RPM:: TAG_RELEASE
+--- RPM:: TAG_EPOCH
+--- RPM:: TAG_SUMMARY
+--- RPM:: TAG_DESCRIPTION
+--- RPM:: TAG_BUILDTIME
+--- RPM:: TAG_BUILDHOST
+--- RPM:: TAG_INSTALLTIME
+--- RPM:: TAG_SIZE
+--- RPM:: TAG_DISTRIBUTION
+--- RPM:: TAG_VENDOR
+--- RPM:: TAG_GIF
+--- RPM:: TAG_XPM
+--- RPM:: TAG_LICENSE
+--- RPM:: TAG_PACKAGER
+--- RPM:: TAG_GROUP
+--- RPM:: TAG_SOURCE
+--- RPM:: TAG_PATCH
+--- RPM:: TAG_URL
+--- RPM:: TAG_OS
+--- RPM:: TAG_ARCH
+--- RPM:: TAG_PREIN
+--- RPM:: TAG_POSTIN
+--- RPM:: TAG_PREUN
+--- RPM:: TAG_POSTUN
+--- RPM:: TAG_FILESIZES
+--- RPM:: TAG_FILESTATES
+--- RPM:: TAG_FILEMODES
+--- RPM:: TAG_FILERDEVS
+--- RPM:: TAG_FILEMTIMES
+--- RPM:: TAG_FILEMD5S
+--- RPM:: TAG_FILELINKTOS
+--- RPM:: TAG_FILEFLAGS
+--- RPM:: TAG_FILEUSERNAME
+--- RPM:: TAG_FILEGROUPNAME
+--- RPM:: TAG_ICON
+--- RPM:: TAG_SOURCERPM
+--- RPM:: TAG_FILEVERIFYFLAGS
+--- RPM:: TAG_ARCHIVESIZE
+--- RPM:: TAG_PROVIDENAME
+--- RPM:: TAG_REQUIREFLAGS
+--- RPM:: TAG_REQUIRENAME
+--- RPM:: TAG_REQUIREVERSION
+--- RPM:: TAG_CONFLICTFLAGS
+--- RPM:: TAG_CONFLICTNAME
+--- RPM:: TAG_CONFLICTVERSION
+--- RPM:: TAG_EXCLUDEARCH
+--- RPM:: TAG_EXCLUDEOS
+--- RPM:: TAG_EXCLUSIVEARCH
+--- RPM:: TAG_EXCLUSIVEOS
+--- RPM:: TAG_RPMVERSION
+--- RPM:: TAG_TRIGGERSCRIPTS
+--- RPM:: TAG_TRIGGERNAME
+--- RPM:: TAG_TRIGGERVERSION
+--- RPM:: TAG_TRIGGERFLAGS
+--- RPM:: TAG_TRIGGERINDEX
+--- RPM:: TAG_VERIFYSCRIPT
+--- RPM:: TAG_CHANGELOGTIME
+--- RPM:: TAG_CHANGELOGNAME
+--- RPM:: TAG_CHANGELOGTEXT
+--- RPM:: TAG_PREINPROG
+--- RPM:: TAG_POSTINPROG
+--- RPM:: TAG_PREUNPROG
+--- RPM:: TAG_POSTUNPROG
+--- RPM:: TAG_BUILDARCHS
+--- RPM:: TAG_OBSOLETENAME
+--- RPM:: TAG_VERIFYSCRIPTPROG
+--- RPM:: TAG_TRIGGERSCRIPTPROG
+--- RPM:: TAG_COOKIE
+--- RPM:: TAG_FILEDEVICES
+--- RPM:: TAG_FILEINODES
+--- RPM:: TAG_FILELANGS
+--- RPM:: TAG_PREFIXES
+--- RPM:: TAG_INSTPREFIXES
+--- RPM:: TAG_PROVIDEFLAGS
+--- RPM:: TAG_PROVIDEVERSION
+--- RPM:: TAG_OBSOLETEFLAGS
+--- RPM:: TAG_OBSOLETEVERSION
+--- RPM:: TAG_DIRINDEXES
+--- RPM:: TAG_BASENAMES
+--- RPM:: TAG_DIRNAMES
+--- RPM:: TAG_OPTFLAGS
+--- RPM:: TAG_PAYLOADFORMAT
+--- RPM:: TAG_PAYLOADCOMPRESSOR
+--- RPM:: TAG_PAYLOADFLAGS
+--- RPM:: TAG_MULTILIBS
+--- RPM:: TAG_INSTALLTID
+--- RPM:: TAG_REMOVETID
+--- RPM:: TAG_RHNPLATFORM
+--- RPM:: TAG_PLATFORM
+
+    Tag.
+
+--- RPM:: FILE_STATE_NORMAL
+--- RPM:: FILE_STATE_REPLACED
+--- RPM:: FILE_STATE_NOTINSTALLED
+--- RPM:: FILE_STATE_NETSHARED
+
+    Status of installed files.
+
+--- RPM:: FILE_NONE
+--- RPM:: FILE_CONFIG
+--- RPM:: FILE_DOC
+--- RPM:: FILE_DONOTUSE
+--- RPM:: FILE_MISSINGOK
+--- RPM:: FILE_SPECFILE
+--- RPM:: FILE_GHOST
+--- RPM:: FILE_LICENSE
+--- RPM:: FILE_README
+--- RPM:: FILE_EXCLUDE
+--- RPM:: FILE_MULTILIB_SHIFT
+--- RPM:: FILE_MULTILIB_MASK
+--- RPM:: FILE_ALL
+
+    Flags of the files contained in the package.
+
+--- RPM:: SENSE_ANY
+--- RPM:: SENSE_SERIAL
+--- RPM:: SENSE_LESS
+--- RPM:: SENSE_GREATER
+--- RPM:: SENSE_EQUAL
+--- RPM:: SENSE_PROVIDES
+--- RPM:: SENSE_CONFLICTS
+--- RPM:: SENSE_PREREQ
+--- RPM:: SENSE_OBSOLETES
+--- RPM:: SENSE_INTERP
+--- RPM:: SENSE_SCRIPT_PRE
+--- RPM:: SENSE_SCRIPT_POST
+--- RPM:: SENSE_SCRIPT_PREUN
+--- RPM:: SENSE_SCRIPT_POSTUN
+--- RPM:: SENSE_SCRIPT_VERIFY
+--- RPM:: SENSE_FIND_REQUIRES
+--- RPM:: SENSE_FIND_PROVIDES
+--- RPM:: SENSE_TRIGGERIN
+--- RPM:: SENSE_TRIGGERUN
+--- RPM:: SENSE_TRIGGERPOSTUN
+--- RPM:: SENSE_MULTILIB
+--- RPM:: SENSE_SCRIPT_PREP
+--- RPM:: SENSE_SCRIPT_BUILD
+--- RPM:: SENSE_SCRIPT_INSTALL
+--- RPM:: SENSE_SCRIPT_CLEAN
+--- RPM:: SENSE_RPMLIB
+--- RPM:: SENSE_TRIGGERPREIN
+--- RPM:: SENSE_KEYRING
+--- RPM:: SENSE_TRIGGER
+
+    ((<RPM::Dependency>)) Indicate the meaning of such constants.
+
+--- RPM:: PROB_BADARCH
+--- RPM:: PROB_BADOS
+--- RPM:: PROB_PKG_INSTALLED
+--- RPM:: PROB_BADRELOCATE
+--- RPM:: PROB_REQUIRES
+--- RPM:: PROB_CONFLICT
+--- RPM:: PROB_NEW_FILE_CONFLICT
+--- RPM:: PROB_FILE_CONFLICT
+--- RPM:: PROB_OLDPACKAGE
+--- RPM:: PROB_DISKSPACE
+--- RPM:: PROB_DISKNODES
+--- RPM:: PROB_BADPRETRANS
+
+    ((<RPM::Problem>)) Represents the type of constant.
+
+--- RPM:: CALLBACK_INST_PROGRESS
+--- RPM:: CALLBACK_INST_START
+--- RPM:: CALLBACK_INST_OPEN_FILE
+--- RPM:: CALLBACK_INST_CLOSE_FILE
+--- RPM:: CALLBACK_TRANS_PROGRESS
+--- RPM:: CALLBACK_TRANS_START
+--- RPM:: CALLBACK_TRANS_STOP
+--- RPM:: CALLBACK_UNINST_PROGRESS
+--- RPM:: CALLBACK_UNINST_START
+--- RPM:: CALLBACK_UNINST_STOP
+
+    ((<RPM::CallbackData>)) Represents a kind of constant.
+
+--- RPM:: TRANS_FLAG_NONE
+--- RPM:: TRANS_FLAG_TEST
+--- RPM:: TRANS_FLAG_BUILD_PROBS
+--- RPM:: TRANS_FLAG_NOSCRIPTS
+--- RPM:: TRANS_FLAG_JUSTDB
+--- RPM:: TRANS_FLAG_NOTRIGGERS
+--- RPM:: TRANS_FLAG_NODOCS
+--- RPM:: TRANS_FLAG_ALLFILES
+--- RPM:: TRANS_FLAG_KEEPOBSOLETE
+--- RPM:: TRANS_FLAG_MULTILIB
+--- RPM:: TRANS_FLAG_DIRSTASH
+--- RPM:: TRANS_FLAG_REPACKAGE
+--- RPM:: TRANS_FLAG_PKGCOMMIT
+--- RPM:: TRANS_FLAG_PKGUNDO
+--- RPM:: TRANS_FLAG_COMMIT
+--- RPM:: TRANS_FLAG_UNDO
+--- RPM:: TRANS_FLAG_REVERSE
+--- RPM:: TRANS_FLAG_NOTRIGGERPREIN
+--- RPM:: TRANS_FLAG_NOPRE
+--- RPM:: TRANS_FLAG_NOPOST
+--- RPM:: TRANS_FLAG_NOTRIGGERIN
+--- RPM:: TRANS_FLAG_NOTRIGGERUN
+--- RPM:: TRANS_FLAG_NOPREUN
+--- RPM:: TRANS_FLAG_NOPOSTUN
+--- RPM:: TRANS_FLAG_NOTRIGGERPOSTUN
+--- RPM:: TRANS_FLAG_NOPAYLOAD
+--- RPM:: TRANS_FLAG_APPLYONLY
+--- RPM:: TRANS_FLAG_CHAINSAW
+--- RPM:: TRANS_FLAG_NOMD5
+
+    ((<RPM::Transaction#commit>)) The first argument passed to the transaction processing
+    Constant option.
+
+--- RPM:: PROB_FILTER_NONE
+--- RPM:: PROB_FILTER_IGNOREOS
+--- RPM:: PROB_FILTER_IGNOREARCH
+--- RPM:: PROB_FILTER_REPLACEPKG
+--- RPM:: PROB_FILTER_FORCERELOCATE
+--- RPM:: PROB_FILTER_REPLACENEWFILES
+--- RPM:: PROB_FILTER_REPLACEOLDFILES
+--- RPM:: PROB_FILTER_OLDPACKAGE
+--- RPM:: PROB_FILTER_DISKSPACE
+--- RPM:: PROB_FILTER_DISKNODES
+--- RPM:: PROB_FILTER_FORCE
+--- RPM:: PROB_FILTER_REPLACEFILES
+--- RPM:: PROB_FILTER_IGNORESIZE
+
+    ((<RPM::Transaction#commit>)) For the filter constant argument to the second problem
+    Number.
+
+=== Module Functions
+
+--- RPM. [] (Name)
+
+    To see the macro.
+
+--- RPM .[]=( name, value)
+
+    To set up a macro. ((| Value |)) is (({nil})) if not delete the macro.
+
+--- RPM.readrc (path, ...)
+
+    Read the configuration file.
+
+--- RPM.verbosity
+--- RPM.verbosity = (level)
+
+    achieve the level of messages output by the rpm, or set.
+
+== RPM:: Version
+
+=== Superclass
+
+  * Object
+
+=== Mix-in
+
+  * Comparable
+
+Specific methods ===
+
+--- RPM:: Version.new (vr, e = nil)
+--- RPM:: Version.new (v, r, e = nil)
+
+    Generate a Version object. ((| V |)) version, ((| r |)) is reset
+    Lease, ((| e |)) is the Epoch. ((| Vr |)) is (({"ver [-a rel ]"}))
+    Format string.
+
+    For example:
+
+        RPM:: Version.new "1.0.0-3"
+        RPM:: Version.new "1.04"
+        RPM:: Version.new "1.0.0-3k", 1
+        RPM:: Version.new "2.0.3", "5k"
+
+=== Method
+
+--- RPM:: Version #<=>( ver)
+
+    Versions and releases ((| ver |)) and return the results were compared.
+
+--- RPM:: Version # newer? (Ver)
+
+    Version, release, when compared to their new Epoch (({true})) is returned.
+
+--- RPM:: Version # older? (Ver)
+
+    Version, release, when compared to their older Epoch (({true})) is returned.
+
+--- RPM:: Version # v
+--- RPM:: Version # r
+--- RPM:: Version # e
+
+    Version, release, return the value of the Epoch.
+
+--- RPM:: Version # to_s
+
+    (({"Ver-rel"})) return a string of the form.
+
+--- RPM:: Version # to_vre
+
+    (({"Epoch: ver-rel"})) return a string of the form.
+
+
+== RPM:: Source
+
+=== Superclass
+
+  * Object
+
+Specific methods ===
+
+--- RPM:: Source.new (url, num, nosource = false)
+
+    Source objects generate. ((| Url |)) is a URL, ((| num |)) is the source
+    Number, ((| nosource |)) is true if NoSource.
+
+    For example:
+
+        RPM:: Source.new ('http://example.com/hoge/hoge.tar.bz2', 0)
+        RPM:: Source.new ('http://example.com/fuga/fuga.tar.gz', 1, true)
+
+=== Method
+
+--- RPM:: Source # fullname
+--- RPM:: Source # to_s
+
+    Returns the source URL or file name.
+
+--- RPM:: Source # filename
+
+    Returns the filename of the source.
+
+--- RPM:: Source # num
+
+    Returns the number of sources.
+
+--- RPM:: Source # no?
+
+    If the specified NoSource (({true})) is returned.
+
+== RPM:: Patch
+
+=== Superclass
+
+  * ((<RPM::Source>))
+
+== RPM:: Icon
+
+=== Superclass
+
+  * ((<RPM::Source>))
+
+== RPM:: File
+
+=== Superclass
+
+  * Object
+
+=== Method
+
+--- RPM:: File # path
+--- RPM:: File # to_s
+
+    Return the path.
+
+--- RPM:: File # md5sum
+
+    MD5 digest and returns a string.
+
+--- RPM:: File # link_to
+
+    Returns the path to the destination if the file is a symbolic link link.
+    This path is sometimes relative. To convert an absolute path from relative path,
+
+        File.expand_path (file.link_to, File.dirname (file.path))
+
+    You.
+
+--- RPM:: File # symlink?
+
+    If the file is a symbolic link (({true})) is returned.
+
+--- RPM:: File # size
+
+    Returns the file size.
+
+--- RPM:: File # mtime
+
+    The Time object to return the file modification time.
+
+--- RPM:: File # owner
+
+    User owns the file name. (({Nil})) may be returned.
+
+--- RPM:: File # uid
+
+    Returns the uid of the user who owns the file.
+
+--- RPM:: File # group
+
+    Group that owns the file name. (({Nil})) may be returned.
+
+--- RPM:: File # gid
+
+    Return the gid of the user who owns the file.
+
+--- RPM:: File # rdev
+
+    Returns the device type of the file.
+
+--- RPM:: File # mode
+
+    Returns the file permissions.
+
+--- RPM:: File # attr
+
+    Returns file attributes.
+
+--- RPM:: File # state
+
+    Returns the status of the file.
+
+--- RPM:: File # config?
+
+    If% config files are specified (({true})) is returned.
+
+--- RPM:: File # doc?
+
+    If the file is specified% doc (({true})) is returned.
+
+--- RPM:: File # donotuse?
+
+    If the file is specified% donotuse (({true})) is returned.
+
+--- RPM:: File # missingok?
+
+    % Config files (missingok) is given if (({true})) is returned.
+
+--- RPM:: File # noreplace?
+
+    % Config files (noreplace) is given if (({true})) is returned.
+
+--- RPM:: File # specfile?
+
+    Spec file if the file is (({true})) is returned.
+
+--- RPM:: File # ghost?
+
+    If the file is specified% ghost (({true})) is returned.
+
+--- RPM:: File # license?
+
+    If the file is specified% license (({true})) is returned.
+
+--- RPM:: File # readme?
+
+    If the specified% readme file (({true})) is returned.
+
+--- RPM:: File # exclude?
+
+    If the file is specified% exclude (({true})) is returned.
+
+--- RPM:: File # replaced?
+
+    If the installation replaces the file (({true})) is returned.
+
+--- RPM:: File # notinstalled?
+
+    If you have not installed File (({true})) is returned.
+
+--- RPM:: File # netshared?
+
+    If the file is shared over the network (({true})) is returned.
+
+== RPM:: Dependency
+
+=== Superclass
+
+  * Object
+
+=== Method
+
+--- RPM:: Dependency # name
+
+    Returns the name of the dependent packages.
+
+--- RPM:: Dependency # version
+
+    Returns the version of the dependency.
+
+--- RPM:: Dependency # flags
+
+    Returns the dependent flags.
+
+--- RPM:: Dependency # target
+
+    Objects that depend on (((<Package|RPM::Package>)) and
+    ((<Spec|RPM::Spec>)), Etc.) is returned.
+
+--- RPM:: Dependency # lt?
+
+    (({<=})) (({<})) Or if it is to compare the versions (({true})) is returned.
+
+--- RPM:: Dependency # gt?
+
+    (({>=})) (({>})) Or if it is to compare the versions (({true})) is returned.
+
+--- RPM:: Dependency # eq?
+
+    (({==})) (({<=})) Or if it is to compare the version (({>=})) or (({true})) is returned.
+
+--- RPM:: Dependency # le?
+
+    If the comparison of the versions (({<=})) (({true})) is returned.
+
+--- RPM:: Dependency # ge?
+
+    If the comparison of the versions (({>=})) (({true})) is returned.
+
+--- RPM:: Dependency # satisfy? (Ver)
+
+    ((| Ver |)) if it satisfies this Dependency (({true})) is returned.
+
+== RPM:: Provide
+
+=== Superclass
+
+  * ((<RPM::Dependency>))
+
+== RPM:: Require
+
+=== Superclass
+
+  * ((<RPM::Dependency>))
+
+=== Method
+
+--- RPM:: Require # pre?
+
+    If the dependency PreReq (({true})) is returned.
+
+== RPM:: Conflict
+
+=== Superclass
+
+  * ((<RPM::Dependency>))
+
+== RPM:: Obsolete
+
+=== Superclass
+
+  * ((<RPM::Dependency>))
+
+== RPM:: Package
+
+=== Superclass
+
+  * Data
+
+Specific methods ===
+
+--- RPM:: Package.open (filename)
+--- RPM:: Package.new (filename)
+
+    File ((| filename |)) to create a package object from.
+
+=== Method
+
+--- RPM:: Package # [] (tag)
+
+    Returns the value of the package to be associative tag.
+
+--- RPM:: Package # name
+
+    Returns the package name.
+
+--- RPM:: Package # version
+
+    Version of the package (((<Version|RPM::Version>))) is returned.
+
+--- RPM:: Package # files
+
+    Included in the package file (((<File|RPM::File>))) returns an array.
+
+--- RPM:: Package # provides
+
+    Provides a package that returns an array.
+
+--- RPM:: Package # requires
+
+    Requires return an array of packages.
+
+--- RPM:: Package # conflicts
+
+    Returns an array of Conflicts of the package.
+
+--- RPM:: Package # changelog
+
+    Returns an array of the package changelog. Update history ,(({: time})),
+    (({: Name })),(({: text})) is a hash with three keys.
+
+--- RPM:: Package # to_s
+
+    (({"Name-version-release"})) returns a string.
+
+== RPM:: ChangeLog
+
+=== Superclass
+
+  * Struct
+
+=== Method
+
+--- RPM:: ChangeLog # time
+--- RPM:: ChangeLog # name
+--- RPM:: ChangeLog # text
+
+== RPM:: Spec
+
+=== Superclass
+
+  * Data
+
+Specific methods ===
+
+--- RPM:: Spec.open (filename)
+--- RPM:: Spec.new (filename)
+
+    ((| Filename |)) to generate the Spec objects specified in the spec file.
+
+=== Method
+
+--- RPM:: Spec # buildroot
+
+    Return to BuildRoot.
+
+--- RPM:: Spec # buildsubdir
+
+    Returns the name of the directory that is created in the BuildRoot.
+
+--- RPM:: Spec # buildarchs
+
+    Returns an array of target architecture name Build (if not otherwise specified nil).
+
+--- RPM:: Spec # buildprereq
+
+    Returns an array of BuildPreReq.
+
+--- RPM:: Spec # buildrequires
+
+    Returns an array of BuildRequires.
+
+--- RPM:: Spec # buildconflicts
+
+    Returns an array of BuildConflicts.
+
+--- RPM:: Spec # sources
+
+    Source File (((<Source|RPM::Source>)),
+    ((<Patch|RPM::Patch>)), ((<Icon|RPM::Icon>))) Returns an array.
+
+--- RPM:: Spec # packages
+
+    Packages made to build a Spec (((<Package|RPM::Package>))) returns an array.
+    Package object is incomplete (eg,
+    ((<Package#files|RPM::Package#files>)) Method (({nil})) return a).
+
+== RPM:: DB
+
+=== Superclass
+
+  * Data
+
+=== Mix-in
+
+  * Enumerable
+
+Specific methods ===
+
+--- RPM:: DB.open (writable = false, root ='')
+--- RPM:: DB.new (writable = false, root ='')
+
+    Opening the package database. ((| Writable |)) is (({false})) if,
+    Transaction processing is not (see ((<RPM::DB#transaction>))).
+    ((| Writable |)) is (({false})) if the object is generated
+    (({Freeze})) that was.
+
+    The database (({"#{ root} / var / lib / rpm "})) and must reside in the
+    They do not.
+
+--- RPM:: DB.init (root, writable = false)
+
+    Initialize the package database.
+
+    The database (({"#{ root} / var / lib / rpm "})) is created.
+
+--- RPM:: DB.rebuild (root ='')
+
+    To rebuild the package database.
+
+    The database (({"#{ root} / var / lib / rpm "})) and must reside in the
+    They do not.
+
+=== Method
+
+--- RPM:: DB # root
+
+    Returns the root directory.
+
+--- RPM:: DB # home
+
+    Return to the home directory of the database.
+
+--- RPM:: DB # writable?
+
+    The database is writable if (({true})) is returned.
+
+--- RPM:: DB # each {| pkg | ...}
+
+    To evaluate the block for each package contained in the database.
+
+--- RPM:: DB # each_match (tag, val) {| pkg | ...}
+
+    Tags contained in the database ((| tag |)) the value of ((| val |)) to match each
+    To evaluate the block on the package.
+
+--- RPM:: DB # transaction (root = nil) {| ts | ...}
+
+    Into the transaction processing. (({Freeze})) database is a tiger
+    Transaction can not be processed. If a successful transaction processing
+    Is (({true})) is returned. Within the block
+    ((<Transaction#abort|RPM::Transaction#abort>)) If you are
+    (({False})) is returned. If you encounter problems during the transaction,
+    Returns an array of hash keys and the Symbol below.
+
+    : (({: Type}))
+      Type of problem.
+    : (({: Key}))
+      Key transactions.
+    : (({: Package}))
+      Package became a problem.
+    : (({: Message}))
+      Description of the problem.
+
+    ((| Root |)) is (({nil})) if ((<RPM::DB#root>)) are used values.
+
+== RPM:: Transaction
+
+=== Superclass
+
+  * Data
+
+=== Method
+
+--- RPM:: Transaction # db
+
+    Returns the database corresponding to the transaction.
+
+--- RPM:: Transaction # script_file
+--- RPM:: Transaction # script_file = (file)
+
+    Get the file to write to log a transaction that you specify.
+
+--- RPM:: Transaction # install (key, pkg)
+
+    Add the install transaction.
+
+--- RPM:: Transaction # upgrade (key, pkg)
+
+    Add to upgrade transaction.
+
+--- RPM:: Transaction # available (key, pkg)
+
+    Shiraso
+
+--- RPM:: Transaction # delete (key)
+
+    Remove the transaction.
+
+--- RPM:: Transaction # check
+
+    Check the dependencies. If dependencies are not met, the
+    ((<Dependency|RPM::Dependency>)) Returns an array. Dependencies are met
+     If not (({nil})) is returned.
+
+--- RPM:: Transaction # order
+
+    To determine the processing order.
+
+--- RPM:: Transaction # keys
+
+    Returns an array of keys corresponding to all transactions that have been added.
+
+--- RPM:: Transaction # commit (flag = RPM:: TRANS_FLAG_NONE, filter = RPM:: PROB_FILTER_NONE)
+--- RPM:: Transaction # commit (flag = RPM:: TRANS_FLAG_NONE, filter = RPM:: PROB_FILTER_NONE) {| sig | ...}
+
+    Add to perform the transaction. Given the block
+    Symbol next to the hash key that contains the progress of the transaction
+    With the name of the cache, to evaluate the block.
+
+    : (({: Type}))
+      Type of event.
+    : (({: Key}))
+      Key transactions.
+    : (({: Package}))
+      Package being processed.
+    : (({: Amount}))
+      Progress.
+    : (({: Total}))
+      Total size.
+
+--- RPM:: Transaction # abort
+
+    To abort the transaction. Database is not changed.
+
+== RPM:: CallbackData
+
+=== Superclass
+
+  * Struct
+
+=== Method
+
+--- RPM:: CallbackData # type
+--- RPM:: CallbackData # key
+--- RPM:: CallbackData # package
+--- RPM:: CallbackData # amount
+--- RPM:: CallbackData # total
+
+== RPM:: Problem
+
+=== Superclass
+
+  * Struct
+
+=== Method
+
+--- RPM:: Problem # type
+--- RPM:: Problem # key
+--- RPM:: Problem # package
+--- RPM:: Problem # description
+
+= End
