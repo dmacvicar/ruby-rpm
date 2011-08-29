@@ -50,6 +50,20 @@ db_free(rpm_db_t* db)
 		db_unref(db);
 }
 
+/*
+ * The package database is opened, but transactional processing
+ * (@see RPM::DB#transaction) cannot be done for when +writable+ is false.
+ * When +writable+ is +false+ then the generated object gets freezed.
+ * @param [Boolean] writable Whether the database is writable. Default is +false+.
+ * @param [String] root Root path for the database, default is empty.
+ * @return [RPM::DB]
+ *
+ * @example
+ *   db = RPM::DB.open
+ *   db.each do |pkg|
+ *     puts pkg.name
+ *   end
+ */
 static VALUE
 db_s_open(int argc, VALUE* argv, VALUE obj)
 {
@@ -107,6 +121,13 @@ rpm_db_open(int writable, const char* root)
 	return db_s_open(2, argv, rpm_cDB);
 }
 
+/*
+ * Initialize the package database
+ * The database {RPM::DB#root} / var / lib /rpm is created.
+ *
+ * @param [String] root Root of the database
+ * @param [Boolean] writable Whether the database is writable. Default +false+.
+ */
 static VALUE
 db_s_init(int argc, VALUE* argv, VALUE obj)
 {
@@ -140,6 +161,9 @@ db_s_init(int argc, VALUE* argv, VALUE obj)
 	return Qnil;
 }
 
+/*
+ * See RPM::DB#init
+ */
 void
 rpm_db_init(const char* root, int writable)
 {
@@ -149,6 +173,11 @@ rpm_db_init(const char* root, int writable)
 	db_s_init(2, argv, rpm_cDB);
 }
 
+/*
+ * Rebuild the package database
+ * It should reside in +root+ / var / lib /rpm
+ * @param [String] root Root path of the database
+ */
 static VALUE
 db_s_rebuild(int argc, VALUE* argv, VALUE obj)
 {
@@ -197,6 +226,9 @@ rpm_db_rebuild(const char* root)
 	db_s_rebuild(1, argv, rpm_cDB);
 }
 
+/*
+ * Closes the database
+ */
 VALUE
 rpm_db_close(VALUE db)
 {
@@ -206,6 +238,9 @@ rpm_db_close(VALUE db)
     return Qnil;
 }
 
+/*
+ * @return [Boolean] +true+ if the database is closed
+ */
 VALUE
 rpm_db_is_closed(VALUE vdb)
 {
@@ -221,6 +256,9 @@ check_closed(VALUE db)
 }
 
 #ifndef RPMDB_OPAQUE
+/*
+ * @return [String] The root path of the database
+ */
 VALUE
 rpm_db_get_root(VALUE db)
 {
@@ -228,6 +266,9 @@ rpm_db_get_root(VALUE db)
 	return rb_str_new2(RPM_DB(db)->db_root);
 }
 
+/*
+ * @return [String] The home path of the database
+ */
 VALUE
 rpm_db_get_home(VALUE db)
 {
@@ -236,6 +277,9 @@ rpm_db_get_home(VALUE db)
 }
 #endif
 
+/*
+ * @return [Boolean] +true+ if the database is writable
+ */
 VALUE
 rpm_db_is_writable(VALUE db)
 {
@@ -243,6 +287,15 @@ rpm_db_is_writable(VALUE db)
 	return OBJ_FROZEN(db) ? Qfalse : Qtrue;
 }
 
+/*
+ * @yield [Package] Called for each match
+ * @param [Number] key RPM tag key
+ * @param [String] val Value to match
+ * @example
+ *   db.each_match(RPM::TAG_ARCH, "x86_64") do |pkg|
+ *     puts pkg.name
+ *   end
+ */
 VALUE
 rpm_db_each_match(VALUE db, VALUE key, VALUE val)
 {
@@ -257,6 +310,13 @@ rpm_db_each_match(VALUE db, VALUE key, VALUE val)
         return Qnil;
 }
 
+/*
+ * @yield [Package] Called for each package in the database
+ * @example
+ *   db.each do |pkg|
+ *     puts pkg.name
+ *   end
+ */
 VALUE
 rpm_db_each(VALUE db)
 {
@@ -344,18 +404,30 @@ rpm_db_transaction(int argc, VALUE* argv, VALUE db)
 	return rb_ivar_get(trans, id_pl);
 }
 
+/*
+ * @return [RPM::DB] The database associated with this transaction
+ */
 VALUE
 rpm_transaction_get_db(VALUE trans)
 {
 	return rb_ivar_get(trans, id_db);
 }
 
+/*
+ * @return [File] Get transaction script file handle
+ *   i.e stdout/stderr on scriptlet execution
+ */
 VALUE
 rpm_transaction_get_script_file(VALUE trans)
 {
 	return rb_ivar_get(trans, id_sf);
 }
 
+/*
+ * Set the transaction script file handle
+ *   i.e stdout/stderr on scriptlet execution
+ * @param [File] file File handle
+ */
 VALUE
 rpm_transaction_set_script_file(VALUE trans, VALUE file)
 {
@@ -372,6 +444,10 @@ rpm_transaction_set_script_file(VALUE trans, VALUE file)
 	return Qnil;
 }
 
+/*
+ * Add a install operation to the transaction
+ * @param [Package] pkg Package to install
+ */
 VALUE
 rpm_transaction_install(VALUE trans, VALUE pkg, VALUE key)
 {
@@ -404,6 +480,10 @@ rpm_transaction_install(VALUE trans, VALUE pkg, VALUE key)
 	return Qnil;
 }
 
+/*
+ * Add a upgrade operation to the transaction
+ * @param [Package] pkg Package to upgrade
+ */
 VALUE
 rpm_transaction_upgrade(VALUE trans, VALUE pkg, VALUE key)
 {
@@ -470,6 +550,10 @@ rpm_transaction_available(VALUE trans, VALUE pkg, VALUE key)
 }
 #endif /* RPMTS_AVAILABLE */
 
+/*
+ * Add a delete operation to the transaction
+ * @param [String, Package, Dependency] pkg Package to delete
+ */
 VALUE
 rpm_transaction_delete(VALUE trans, VALUE pkg)
 {
@@ -603,7 +687,11 @@ package_new_from_NEVR(const char* nevr)
 }
 #endif
 
-
+/*
+ * Check the dependencies.
+ * @return [Array<Dependency>, +nil+] If dependencies are not met returns an
+ *    array with dependencies. Otherwise +nil+.
+ */
 VALUE
 rpm_transaction_check(VALUE trans)
 {
@@ -799,6 +887,9 @@ rpm_transaction_check(VALUE trans)
 #endif
 }
 
+/*
+ * To determine the processing order.
+ */
 VALUE
 rpm_transaction_order(VALUE trans)
 {
@@ -810,6 +901,10 @@ rpm_transaction_order(VALUE trans)
 	return Qnil;
 }
 
+/*
+ * @return [Array<String>] an array of keys corresponding to all transactions
+ *   that have been added.
+ */
 VALUE
 rpm_transaction_keys(VALUE trans)
 {
@@ -861,6 +956,15 @@ transaction_callback(const void* hd, const rpmCallbackType type,
 	return NULL;
 }
 
+/*
+ * Performs the transaction.
+ * @param [Number] flag Transaction flags, default +RPM::TRANS_FLAG_NONE+
+ * @param [Number] filter Transaction filter, default +RPM::PROB_FILTER_NONE+
+ * @example
+ *   transaction.commit do |sig|
+ *   end
+ * @yield [CallbackData] sig Transaction progress
+ */
 VALUE
 rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 {
@@ -1022,6 +1126,9 @@ rpm_transaction_commit(int argc, VALUE* argv, VALUE trans)
 	return Qnil; /* NOT REACHED */
 }
 
+/*
+ * To abort the transaction. Database is not changed.
+ */
 VALUE
 rpm_transaction_abort(VALUE trans)
 {
@@ -1192,8 +1299,16 @@ Init_rpm_transaction(void)
 	rb_undef_method(rpm_cTransaction, "dup");
 	rb_undef_method(rpm_cTransaction, "clone");
 
+    /*
+     * @attr [Number] type Type of event
+     * @attr [Number] key Key transactions
+     * @attr [Package] package Package being processed
+     * @attr [Number] amount Progress
+     * @attr [Number] total Total size
+     */
 	rpm_sCallbackData = rb_struct_define(NULL, "type", "key", "package",
 										 "amount", "total", NULL);
+
 	rb_define_const(rpm_mRPM, "CallbackData", rpm_sCallbackData);
 
 	rpm_sProblem = rb_struct_define(NULL, "type", "key", "package",
