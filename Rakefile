@@ -19,18 +19,22 @@ Rake::TestTask.new do |t|
 end
 
 extra_docs = ['README*', 'TODO*', 'CHANGELOG*']
+doc_files = ['lib/**/*.rb', 'ext/rpm/*.c', *extra_docs]
+
 
 begin
  require 'yard'
   YARD::Rake::YardocTask.new(:doc) do |t|
-    t.files   = ['lib/**/*.rb', 'ext/rpm/*.c', *extra_docs]
+    t.files   = doc_files
+    t.options = ['--no-private']
   end
 rescue LoadError
   STDERR.puts "Install yard if you want prettier docs"
+  require 'rdoc/task'
   Rake::RDocTask.new(:doc) do |rdoc|
     rdoc.rdoc_dir = "doc"
     rdoc.title = "#{RPM::PKG_NAME} #{RPM::VERSION}"
-    extra_docs.each { |ex| rdoc.rdoc_files.include ex }
+    doc_files.each { |ex| rdoc.rdoc_files.include ex }
   end
 end
 
