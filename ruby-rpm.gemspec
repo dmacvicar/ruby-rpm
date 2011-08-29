@@ -21,8 +21,9 @@ EOF
     s.files        = Dir.glob("lib/**/*.rb") + Dir.glob("ext/**/*.{rb,h,c}") + %w(CHANGELOG.rdoc README.rdoc)
 
   s.required_rubygems_version = ">= 1.3.6"
-  s.add_development_dependency("rake-compiler", [">= 0"])
-  s.add_development_dependency("rdoc", [">= 0"])
+  s.add_development_dependency("rake-compiler", ["~> 0.7"])
+  s.add_development_dependency("rdoc", ["~> 3.9"])
+  s.add_development_dependency("rdiscount", ["~> 1.6"])
   s.require_path = 'lib'
 
 end
