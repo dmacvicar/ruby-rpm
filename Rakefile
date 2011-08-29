@@ -6,7 +6,7 @@ require 'rake/gempackagetask'
 require 'rake/rdoctask'
 require "rpm/version"
 
-SPEC_FILE="spec/fedora/ruby-rpm.spec"
+SPEC_FILE="distro/fedora/ruby-rpm.spec"
 
 task :install => :build do
   system "sudo gem install ruby-rpm-#{RPM::VERSION}.gem"
