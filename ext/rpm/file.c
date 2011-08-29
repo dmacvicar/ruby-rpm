@@ -78,54 +78,84 @@ rpm_file_new(const char* path, const char* md5sum, const char* link_to,
 	return file;
 }
 
+/*
+ * @return [String] file path
+ */
 VALUE
 rpm_file_get_path(VALUE file)
 {
 	return rb_ivar_get(file, id_path);
 }
 
+/*
+ * @return [String] md5sum as string
+ */
 VALUE
 rpm_file_get_md5sum(VALUE file)
 {
 	return rb_ivar_get(file, id_md5sum);
 }
 
+/*
+ * @return [String] Path to the destination if the file is a symbolic link
+ * @note
+ *   This path is sometimes relative. To convert an absolute path from relative path:
+ *   File.expand_path (file.link_to, File.dirname (file.path))
+ */
 VALUE
 rpm_file_get_link_to(VALUE file)
 {
 	return rb_ivar_get(file, id_link_to);
 }
 
+/*
+ * @return [Number] File size
+ */
 VALUE
 rpm_file_get_size(VALUE file)
 {
 	return rb_ivar_get(file, id_size);
 }
 
+/*
+ * @return [Time] File modification time.
+ */
 VALUE
 rpm_file_get_mtime(VALUE file)
 {
 	return rb_ivar_get(file, id_mtime);
 }
 
+/*
+ * @return [String] File owner. Nil may be returned.
+ */
 VALUE
 rpm_file_get_owner(VALUE file)
 {
 	return rb_ivar_get(file, id_owner);
 }
 
+/*
+ * @return [String] Group that owns the file. Nil may be returned.
+ */
 VALUE
 rpm_file_get_group(VALUE file)
 {
 	return rb_ivar_get(file, id_group);
 }
 
+/*
+ * @return [Number] Device type of the file
+ */
 VALUE
 rpm_file_get_rdev(VALUE file)
 {
 	return rb_ivar_get(file, id_rdev);
 }
 
+/*
+ * @return [Number] File permissions
+ */
 VALUE
 rpm_file_get_mode(VALUE file)
 {
@@ -144,24 +174,36 @@ rpm_file_get_state(VALUE file)
 	return rb_ivar_get(file, id_state);
 }
 
+/*
+ * @return [Boolean] True if the file is a symbolic link
+ */
 VALUE
 rpm_file_is_symlink(VALUE file)
 {
 	return NIL_P(rb_ivar_get(file, id_link_to)) ? Qfalse : Qtrue;
 }
 
+/*
+ * @return [Boolean] True if the file is marked as a configuration file
+ */
 VALUE
 rpm_file_is_config(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_CONFIG) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is marked as documentation
+ */
 VALUE
 rpm_file_is_doc(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_DOC) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is marked as do not use
+ */
 VALUE
 rpm_file_is_donotuse(VALUE file)
 {
@@ -172,48 +214,86 @@ rpm_file_is_donotuse(VALUE file)
 #endif
 }
 
+/*
+ * @return [Boolean] True if the file is marked that can be missing on disk
+ *
+ * This modifier is used for files or links that are created during the %post scripts
+ *   but will need to be removed if the package is removed
+ */
 VALUE
 rpm_file_is_missingok(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_MISSINGOK) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is marked as configuration not to be replaced
+ *
+ * This flag is used to protect local modifications.
+ * If used, the file will not overwrite an existing file that has been modified.
+ * If the file has not been modified on disk, the rpm command will overwrite the file. But,
+ *   if the file has been modified on disk, the rpm command will copy the new file with an extra
+ *   file-name extension of .rpmnew.
+ */
 VALUE
 rpm_file_is_noreplace(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_NOREPLACE) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is marked as a spec file
+ */
 VALUE
 rpm_file_is_specfile(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_SPECFILE) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is marked as ghost
+ *
+ * This flag indicates the file should not be included in the package.
+ * It can be used to name the needed attributes for a file that the program, when installed,
+ *   will create.
+ * For example, you may want to ensure that a program’s log file has certain attributes.
+ */
 VALUE
 rpm_file_is_ghost(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_GHOST) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is a license
+ */
 VALUE
 rpm_file_is_license(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_LICENSE) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is a README
+ */
 VALUE
 rpm_file_is_readme(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_README) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is listed in the exlude section
+ */
 VALUE
 rpm_file_is_exclude(VALUE file)
 {
 	return (NUM2INT(rb_ivar_get(file, id_attr)) & RPMFILE_EXCLUDE) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is replaced during installation
+ */
 VALUE
 rpm_file_is_replaced(VALUE file)
 {
@@ -221,6 +301,9 @@ rpm_file_is_replaced(VALUE file)
 			== RPMFILE_STATE_REPLACED) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is not installed
+ */
 VALUE
 rpm_file_is_notinstalled(VALUE file)
 {
@@ -228,6 +311,9 @@ rpm_file_is_notinstalled(VALUE file)
 			== RPMFILE_STATE_NOTINSTALLED) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] True if the file is shared over the network
+ */
 VALUE
 rpm_file_is_netshared(VALUE file)
 {
