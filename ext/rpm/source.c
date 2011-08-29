@@ -17,6 +17,16 @@ static ID id_fn;
 static ID id_num;
 static ID id_no;
 
+/*
+ * Creates a new +Source+ object
+ * @param [String] url
+ * @param [Number] source number (index)
+ * @param [Boolean] nosource Sets the NoSource flag (default false)
+ *
+ * @example
+ *   RPM::Source.new ('http://example.com/hoge/hoge.tar.bz2', 0)
+ *   RPM:: Source.new ('http://example.com/fuga/fuga.tar.gz', 1, true)
+ */
 static VALUE
 source_initialize(int argc, VALUE* argv, VALUE src)
 {
@@ -93,12 +103,24 @@ rpm_icon_new(const char* fullname, unsigned int num, int no)
 	return src;
 }
 
+/*
+ * @return [String] Source's fullname
+ * @example
+ *   src = RPM::Source.new('http://example.com/hoge/hoge.tar.bz2', 0)
+ *   src.fullname => 'http://example.com/hoge/hoge.tar.bz2'
+ */
 VALUE
 rpm_source_get_fullname(VALUE src)
 {
 	return rb_ivar_get(src, id_full);
 }
 
+/*
+ * @return [String] Source's filename
+ * @example
+ *   src = RPM::Source.new('http://example.com/hoge/hoge.tar.bz2', 0)
+ *   src.filename => 'hoge.tar.bz2'
+ */
 VALUE
 rpm_source_get_filename(VALUE src)
 {
@@ -119,12 +141,24 @@ rpm_source_get_filename(VALUE src)
 	return fn;
 }
 
+/*
+ * @return [Number] Source's index
+ * @example
+ *   src = RPM::Source.new ('http://example.com/hoge/hoge.tar.bz2', 0)
+ *   src.num => 0
+ */
 VALUE
 rpm_source_get_num(VALUE src)
 {
 	return rb_ivar_get(src, id_num);
 }
 
+/*
+ * @return [Boolean] Whether the NoSource flag is set
+ * @example
+ *   src = RPM::Source.new('http://example.com/hoge/hoge.tar.bz2', 0, true)
+ *   src.no? => true
+ */
 VALUE
 rpm_source_is_no(VALUE src)
 {

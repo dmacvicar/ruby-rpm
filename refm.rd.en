@@ -320,55 +320,6 @@ Table of Contents ==
 
     achieve the level of messages output by the rpm, or set.
 
-== RPM:: Source
-
-=== Superclass
-
-  * Object
-
-Specific methods ===
-
---- RPM:: Source.new (url, num, nosource = false)
-
-    Source objects generate. ((| Url |)) is a URL, ((| num |)) is the source
-    Number, ((| nosource |)) is true if NoSource.
-
-    For example:
-
-        RPM:: Source.new ('http://example.com/hoge/hoge.tar.bz2', 0)
-        RPM:: Source.new ('http://example.com/fuga/fuga.tar.gz', 1, true)
-
-=== Method
-
---- RPM:: Source # fullname
---- RPM:: Source # to_s
-
-    Returns the source URL or file name.
-
---- RPM:: Source # filename
-
-    Returns the filename of the source.
-
---- RPM:: Source # num
-
-    Returns the number of sources.
-
---- RPM:: Source # no?
-
-    If the specified NoSource (({true})) is returned.
-
-== RPM:: Patch
-
-=== Superclass
-
-  * ((<RPM::Source>))
-
-== RPM:: Icon
-
-=== Superclass
-
-  * ((<RPM::Source>))
-
 == RPM:: File
 
 === Superclass
