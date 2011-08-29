@@ -47,14 +47,14 @@ def check_rpm
   dir_config("rpm")
   $libs = append_library($libs, 'rpmdb') if rpm_version < rpm_version([4,6,0])
   $libs = append_library($libs, 'rpm')
+  have_library('rpmbuild', 'getBuildTime')
   if rpm_version >= rpm_version([4,6,0])
     $defs << "-D_RPM_4_4_COMPAT"
     return true
   end
   if have_header('rpm/rpmlib.h') and
       check_db and
-      have_library('rpmio') and
-      have_library('rpmbuild', 'getBuildTime') then
+      have_library('rpmio') then
     true
   else
     STDERR.puts "rpm library not found"
