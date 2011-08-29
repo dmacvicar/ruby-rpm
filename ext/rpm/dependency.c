@@ -159,6 +159,10 @@ rpm_obsolete_new(const char* name, VALUE version, int flags, VALUE target)
 	return obso;
 }
 
+/*
+ * @param [Package, Dependency, Version] other
+ * @return [Boolean] true if +other+ satisfies this dependency
+ */
 VALUE
 rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 {
@@ -209,29 +213,42 @@ rpm_dependency_is_satisfy(VALUE dep,VALUE other)
 	return Qfalse;
 }
 
+/*
+ * @return [String] dependency name
+ */
 VALUE
 rpm_dependency_get_name(VALUE dep)
 {
 	return rb_ivar_get(dep, id_name);
 }
 
+/*
+ * @return [String] dependency version
+ */
 VALUE
 rpm_dependency_get_version(VALUE dep)
 {
 	return rb_ivar_get(dep, id_ver);
 }
 
+/*
+ * @return [Number] dependency flags
+ */
 VALUE
 rpm_dependency_get_flags(VALUE dep)
 {
 	return rb_ivar_get(dep, id_flags);
 }
 
+/*
+ * @return [Package] package this dependency belongs to
+ */
 VALUE
 rpm_dependency_get_owner(VALUE dep)
 {
 	return rb_ivar_get(dep, id_owner);
 }
+
 
 VALUE
 rpm_dependency_get_nametag(VALUE dep)
@@ -251,24 +268,36 @@ rpm_dependency_get_flagstag(VALUE dep)
 	return rb_ivar_get(dep, id_flagstag);
 }
 
+/*
+ * @return [Boolean] true if '<' or '=<' are used to compare the version
+ */
 VALUE
 rpm_dependency_is_lt(VALUE dep)
 {
 	return (NUM2INT(rb_ivar_get(dep, id_flags)) & RPMSENSE_LESS) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] true if '>' or '>=' are used to compare the version
+ */
 VALUE
 rpm_dependency_is_gt(VALUE dep)
 {
 	return (NUM2INT(rb_ivar_get(dep, id_flags)) & RPMSENSE_GREATER) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] true if '=', '=<' or '>=' are used to compare the version
+ */
 VALUE
 rpm_dependency_is_eq(VALUE dep)
 {
 	return (NUM2INT(rb_ivar_get(dep, id_flags)) & RPMSENSE_EQUAL) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] true if '=<' is used to compare the version
+ */
 VALUE
 rpm_dependency_is_le(VALUE dep)
 {
@@ -276,6 +305,9 @@ rpm_dependency_is_le(VALUE dep)
 	return ((flags & RPMSENSE_LESS) && (flags & RPMSENSE_EQUAL)) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] true if '>=' is used to compare the version
+ */
 VALUE
 rpm_dependency_is_ge(VALUE dep)
 {
@@ -283,6 +315,9 @@ rpm_dependency_is_ge(VALUE dep)
 	return ((flags & RPMSENSE_GREATER) && (flags & RPMSENSE_EQUAL)) ? Qtrue : Qfalse;
 }
 
+/*
+ * @return [Boolean] true if this is a pre-requires
+ */
 VALUE
 rpm_require_is_pre(VALUE req)
 {
