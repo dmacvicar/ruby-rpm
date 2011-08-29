@@ -175,8 +175,10 @@ db_s_rebuild(int argc, VALUE* argv, VALUE obj)
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 	ret = rpmdbRebuild(root);
-#else
+#elif RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 	ret = rpmdbRebuild(root, NULL, NULL);
+#else
+	ret = rpmdbRebuild(root, NULL);
 #endif
 	if (ret) {
 		rb_raise(rb_eRuntimeError, "can not rebuild database in %s",
@@ -815,16 +817,16 @@ rpm_transaction_keys(VALUE trans)
 }
 
 #if RPM_VERSION_CODE < RPM_VERSION(4,4,5)
-static void*
-transaction_callback(const void* hd, const rpmCallbackType type,
-					 const unsigned long amount, const unsigned long total,
-					 fnpyKey key, rpmCallbackData data)
+typedef unsigned long rpmCallbackSize_t;
+#elif RPM_VERSION(5,0,0) <= RPM_VERSION_CODE
+typedef uint64_t rpmCallbackSize_t;
 #else
+typedef unsigned long long rpmCallbackSize_t;
+#endif
 static void*
 transaction_callback(const void* hd, const rpmCallbackType type,
-					 const unsigned long long amount, const unsigned long long total,
+					 const rpmCallbackSize_t amount, const rpmCallbackSize_t total,
 					 fnpyKey key, rpmCallbackData data)
-#endif
 {
 	VALUE trans = (VALUE)data;
 	FD_t fdt;

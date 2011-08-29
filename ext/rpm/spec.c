@@ -17,6 +17,11 @@ static ID id_src;
 static ID id_pkg;
 static ID id_rest;
 
+#if RPM_VERSION(5,0,0) <= RPM_VERSION_CODE
+#define headerGetEntryMinMemory(hdr,tag,type,ptr,cnt) \
+        headerGetEntry(hdr,tag,type,(void**)ptr,cnt)
+#endif
+
 #if RPM_VERSION_CODE < RPM_VERSION(4,1,0)
 static void
 spec_free(Spec rspec)
@@ -59,7 +64,15 @@ spec_s_open(VALUE klass, VALUE filename)
 	return Data_Wrap_Struct(klass, NULL, spec_free, rspec);
 #else
 	ts = rpmtsCreate();
+#if RPM_VERSION_CODE < RPM_VERSION(4,4,8)
 	switch (parseSpec(ts, RSTRING_PTR(filename), "/", NULL, 0, "", NULL, 1, 1)) {
+#elif RPM_VERSION_CODE < RPM_VERSION(4,5,90)
+	switch (parseSpec(ts, RSTRING_PTR(filename), "/", 0, "", NULL, 1, 1, 0)) {
+#elif RPM_VERSION_CODE < RPM_VERSION(5,0,0)
+	switch (parseSpec(ts, RSTRING_PTR(filename), "/", NULL, 0, "", NULL, 1, 1)) {
+#else
+	switch (parseSpec(ts, RSTRING_PTR(filename), "/", 0, "", NULL, 1, 1, 0)) {
+#endif
 	case 0:
 		if (ts != NULL) {
 			break;
@@ -81,14 +94,23 @@ rpm_spec_open(const char* filename)
 VALUE
 rpm_spec_get_buildroot(VALUE spec)
 {
-#if RPM_VERSION_CODE >= RPM_VERSION(4,5,90)
+#if RPM_VERSION_CODE < RPM_VERSION(4,5,90)
+	if (RPM_SPEC(spec)->buildRootURL) {
+		return rb_str_new2(RPM_SPEC(spec)->buildRootURL);
+	}
+#elif RPM_VERSION_CODE < RPM_VERSION(4,5,90)
+	if (RPM_SPEC(spec)->rootURL) {
+		return rb_str_new2(RPM_SPEC(spec)->rootURL);
+	}
+#elif RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 	if (RPM_SPEC(spec)->buildRoot) {
 		return rb_str_new2(RPM_SPEC(spec)->buildRoot);
 	}
 #else
-	if (RPM_SPEC(spec)->buildRootURL) {
-		return rb_str_new2(RPM_SPEC(spec)->buildRootURL);
-	}
+	const char *buildRootURL = rpmGenPath(RPM_SPEC(spec)->rootURL, "%{?buildroot}", NULL);
+	VALUE result = rb_str_new2(buildRootURL);
+	buildRootURL = _free(buildRootURL);
+	return result;
 #endif
 	return Qnil;
 }
@@ -124,7 +146,7 @@ rpm_spec_get_buildrequires(VALUE spec)
 {
 	VALUE br = rb_ivar_get(spec, id_br);
 
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 	if (NIL_P(br)) {
 		const char** names;
 		const char** vers;
@@ -195,7 +217,7 @@ VALUE
 rpm_spec_get_buildconflicts(VALUE spec)
 {
 	VALUE bc = rb_ivar_get(spec, id_bc);
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0)
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 	if (NIL_P(bc)) {
 		const char** names;
 		const char** vers;

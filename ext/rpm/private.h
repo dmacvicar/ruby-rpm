@@ -19,15 +19,28 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+/* Looks missing in rpmds.h */
+#include <sys/utsname.h>
 #include <unistd.h>
 
+#if RPM_VERSION(5,0,0) <= RPM_VERSION_CODE
+#include <stdint.h>
+#include <rpm4compat.h>
+#endif
+
+/* To get structure definitions */ 
+#define _RPMDB_INTERNAL 
+#define _RPMPS_INTERNAL
+
 #include <rpm/rpmcli.h>
-#include <rpm/rpmlib.h>
+#if HAVE_RPM_RPMLIB_H
+#  include <rpm/rpmlib.h>
+#endif
 #include <rpm/rpmdb.h>
 #include <rpm/rpmbuild.h>
 #if HAVE_RPM_RPMLOG_H
 #  include <rpm/rpmlog.h>
-#else
+#elif HAVE_RPMMESSAGES_H
 #  include <rpm/rpmmessages.h>
 #endif
 #if HAVE_RPM_RPMTS_H
@@ -58,8 +71,13 @@
 #define RPM_SCRIPT_FD(v) (((rpm_trans_t*)DATA_PTR((v)))->script_fd)
 
 #if RPM_VERSION_CODE >= RPM_VERSION(4,5,90)
+#if RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 #define RPMDB_OPAQUE 1
 #define RPMPS_OPAQUE 1
+#else
+#define RPMDB_OPAQUE 1
+/* #undef RPMPS_OPAQUE */
+#endif
 #else
 #define RPMTS_AVAILABLE 1
 #endif
@@ -122,11 +140,20 @@ get_entry(Header hdr, rpmTag tag, rpmTagType* type, void** ptr)
 		*ptr = NULL;
 	}
 }
-#else
+#elif RPM_VERSION_CODE < RPM_VERSION(5,0,0)
 inline static void
 get_entry(Header hdr, rpmTag tag, rpmtd tc)
 {
 	headerGet(hdr, tag, tc, HEADERGET_MINMEM);
+}
+#else /* rpm4compat.h */
+inline static void
+get_entry(Header hdr, rpmTag tag, rpmTagType* type, void** ptr)
+{
+	if (!headerGetEntry(
+			hdr, (int_32)tag, (hTYP_t)type, ptr, NULL)) {
+		*ptr = NULL;
+	}
 }
 #endif
 
