@@ -38,6 +38,11 @@ ts_free(rpmts ts)
 
 #endif
 
+/*
+ * Create a spec file object from a spec file
+ * @param [String] filename Spec file path
+ * @return [Spec]
+ */
 static VALUE
 spec_s_open(VALUE klass, VALUE filename)
 {
@@ -85,12 +90,19 @@ spec_s_open(VALUE klass, VALUE filename)
 #endif
 }
 
+/*
+ *
+ * Alias for Spec#open
+ */
 VALUE
 rpm_spec_open(const char* filename)
 {
 	return spec_s_open(rpm_cSpec, rb_str_new2(filename));
 }
 
+/*
+ * @return [String] Return Build root defined in the spec file
+ */
 VALUE
 rpm_spec_get_buildroot(VALUE spec)
 {
@@ -115,6 +127,9 @@ rpm_spec_get_buildroot(VALUE spec)
 	return Qnil;
 }
 
+/*
+ * @return [String] Return Build subdirectory defined in the spec file
+ */
 VALUE
 rpm_spec_get_buildsubdir(VALUE spec)
 {
@@ -124,6 +139,9 @@ rpm_spec_get_buildsubdir(VALUE spec)
 	return Qnil;
 }
 
+/*
+ * @return [Array<String>] Return Build architectures defined in the spec file
+ */
 VALUE
 rpm_spec_get_buildarchs(VALUE spec)
 {
@@ -141,6 +159,9 @@ rpm_spec_get_buildarchs(VALUE spec)
 	return ba;
 }
 
+/*
+ * @return [Array<RPM::Require>] Return Build requires defined in the spec file
+ */
 VALUE
 rpm_spec_get_buildrequires(VALUE spec)
 {
@@ -196,7 +217,7 @@ rpm_spec_get_buildrequires(VALUE spec)
 				  versiontd);
 		get_entry(RPM_SPEC(spec)->buildRestrictions, RPMTAG_REQUIREFLAGS,
 				  flagtd);
-		
+
 		rpmtdInit(nametd);
         while ( rpmtdNext(nametd) != -1 ) {
 			rb_ary_push(br, rpm_require_new(rpmtdGetString(nametd), rpm_version_new(rpmtdNextString(versiontd)), *rpmtdNextUint32(flagtd), spec));
@@ -213,6 +234,9 @@ rpm_spec_get_buildrequires(VALUE spec)
 #endif
 }
 
+/*
+ * @return [Array<RPM::Conflict>] Return Build conflicts defined in the spec file
+ */
 VALUE
 rpm_spec_get_buildconflicts(VALUE spec)
 {
@@ -259,7 +283,7 @@ rpm_spec_get_buildconflicts(VALUE spec)
 		bc = rb_ary_new();
 		if (!headerGet(RPM_SPEC(spec)->buildRestrictions,
                        RPMTAG_CONFLICTNAME, nametd, HEADERGET_MINMEM)) {
-		
+
 			goto leave;
 		}
 
@@ -297,6 +321,9 @@ rpm_spec_get_build_restrictions(VALUE spec)
 	return cache;
 }
 
+/*
+ * @return [Array<RPM::Source>] Sources defined in the spec file
+ */
 VALUE
 rpm_spec_get_sources(VALUE spec)
 {
@@ -327,6 +354,9 @@ rpm_spec_get_sources(VALUE spec)
 	return src;
 }
 
+/*
+ * @return [Array<RPM::Package>] Packages defined in the spec file
+ */
 VALUE
 rpm_spec_get_packages(VALUE spec)
 {
@@ -348,6 +378,16 @@ rpm_spec_get_packages(VALUE spec)
 	return pkg;
 }
 
+/*
+ * Builds the spec file
+ * @param [Number] flags bits to enable stages of build
+ * @param [Boolean] test When true, don't execute scripts or package
+ * @return [Number] exit code
+ *
+ * @example
+ *   spec = RPM::Spec.open("foo.spec")
+ *   spec.build(RPM::BUILD__UNTIL_BUILD)
+ */
 VALUE
 rpm_spec_build(int argc, VALUE* argv, VALUE spec)
 {
@@ -384,6 +424,16 @@ rpm_spec_build(int argc, VALUE* argv, VALUE spec)
 	return INT2NUM(rc);
 }
 
+/*
+ * Expands a macro in the spec file
+ * @param [String] name Name of the macro
+ * @return [String]
+ * @example
+ *    spec.expand_macros("configure")
+ *    => "\n CFLAGS=......."
+ *    spec.expand_macros("_prefix")
+ *    => "/usr"
+ */
 VALUE
 rpm_spec_expand_macros(VALUE spec, VALUE name)
 {
