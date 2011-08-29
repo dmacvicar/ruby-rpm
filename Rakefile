@@ -1,10 +1,9 @@
 # Rakefile for ruby-rpm -*- ruby -*-
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
-require 'rake/clean'
-require 'rake/testtask'
-require 'rake/gempackagetask'
-require 'rake/rdoctask'
+require 'bundler'
+Bundler::GemHelper.install_tasks
 require "rpm/version"
+require 'rake/testtask'
 
 SPEC_FILE="distro/fedora/ruby-rpm.spec"
 
