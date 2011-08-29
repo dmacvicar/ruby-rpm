@@ -83,6 +83,24 @@ version_parse(const char* str, VALUE* v, VALUE* r, VALUE* e)
 	}
 }
 
+/*
+ * @overload new(vr, e = nil)
+ *   Creates a version object from a string representation
+ *   @param [String] vr version and release in the form "v-r"
+ *   @param [Number] e epoch
+ *   @return [Version]
+ * @overload new(v, r, e = nil)
+ *   Creates a version object from a string representation
+ *   @param [String] v version
+ *   @param [String] r release
+ *   @param [Number] e epoch
+ *   @return [Version]
+ * @example
+ *   RPM:: Version.new "1.0.0-3"
+ *   RPM:: Version.new "1.04"
+ *   RPM:: Version.new "1.0.0-3k", 1
+ *   RPM:: Version.new "2.0.3", "5k"
+ */
 static VALUE
 version_initialize(int argc, VALUE* argv, VALUE ver)
 {
@@ -184,6 +202,18 @@ rpm_version_new3(const char* v, const char* r, int e)
 	return ver;
 }
 
+/*
+ * Comparison between versions
+ * @param [Version] other
+ * @return [Number] -1 if +other+ is greater than, 0 if +other+ is equal to,
+ *   and +1 if other is less than version.
+ *
+ * @example
+ *   v1 = RPM::Version.new("3.0-0",1)
+ *   v2 = RPM::Version.new("3.1-0",1)
+ *   v1 <=> v2
+ *   => -1
+ */
 VALUE
 rpm_version_cmp(VALUE ver, VALUE other)
 {
@@ -233,36 +263,63 @@ rpm_version_cmp(VALUE ver, VALUE other)
 	return INT2FIX(sense);
 }
 
+/*
+ * @param [Version] other Version to compare against
+ * @return [Boolean] true if the version is newer than +other+
+ */
 VALUE
 rpm_version_is_newer(VALUE ver, VALUE other)
 {
 	return (NUM2INT(rpm_version_cmp(ver, other)) > 0) ? Qtrue : Qfalse;
 }
 
+/*
+ * @param [Version] other Version to compare against
+ * @return [Boolean] true if the version is older than +other+
+ */
 VALUE
 rpm_version_is_older(VALUE ver, VALUE other)
 {
 	return rpm_version_is_newer(ver, other) ? Qfalse : Qtrue;
 }
 
+/*
+ * Access the version component
+ * @return [String] version component
+ */
 VALUE
 rpm_version_get_v(VALUE ver)
 {
 	return rb_ivar_get(ver, id_v);
 }
 
+/*
+ * Access the release component
+ * @return [String] release component or nil if the
+ *   version does not have a release component
+ */
 VALUE
 rpm_version_get_r(VALUE ver)
 {
 	return rb_ivar_get(ver, id_r);
 }
 
+/*
+ * Access the epoch component
+ * @return [Number] epoch component or nil if the
+ *   version does not have an epoch component
+ */
 VALUE
 rpm_version_get_e(VALUE ver)
 {
 	return rb_ivar_get(ver, id_e);
 }
 
+/*
+ * String representation in the form "v-r"
+ * @return [String]
+ * @note The epoch is not included
+ */
 VALUE
 rpm_version_to_s(VALUE ver)
 {
@@ -279,6 +336,11 @@ rpm_version_to_s(VALUE ver)
 	return rb_str_new2(buf);
 }
 
+/*
+ * String representation in the form "e:v-r"
+ * @return [String]
+ * @note The epoch is included
+ */
 VALUE
 rpm_version_to_vre(VALUE ver)
 {
@@ -300,6 +362,10 @@ rpm_version_to_vre(VALUE ver)
 	return rb_str_new2(buf);
 }
 
+/*
+ * Inspect the version object
+ * @return [String] object in the form "#<RPM::Version v=V, r=R, e=E>"
+ */
 VALUE
 rpm_version_inspect(VALUE ver)
 {
@@ -317,6 +383,11 @@ rpm_version_inspect(VALUE ver)
 
 	return rb_str_new2(buf);
 }
+
+/*
+ * Hash based on the version content
+ * @return [String]
+ */
 
 VALUE
 rpm_version_hash(VALUE ver)
