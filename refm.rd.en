@@ -320,61 +320,6 @@ Table of Contents ==
 
     achieve the level of messages output by the rpm, or set.
 
-== RPM:: Version
-
-=== Superclass
-
-  * Object
-
-=== Mix-in
-
-  * Comparable
-
-Specific methods ===
-
---- RPM:: Version.new (vr, e = nil)
---- RPM:: Version.new (v, r, e = nil)
-
-    Generate a Version object. ((| V |)) version, ((| r |)) is reset
-    Lease, ((| e |)) is the Epoch. ((| Vr |)) is (({"ver [-a rel ]"}))
-    Format string.
-
-    For example:
-
-        RPM:: Version.new "1.0.0-3"
-        RPM:: Version.new "1.04"
-        RPM:: Version.new "1.0.0-3k", 1
-        RPM:: Version.new "2.0.3", "5k"
-
-=== Method
-
---- RPM:: Version #<=>( ver)
-
-    Versions and releases ((| ver |)) and return the results were compared.
-
---- RPM:: Version # newer? (Ver)
-
-    Version, release, when compared to their new Epoch (({true})) is returned.
-
---- RPM:: Version # older? (Ver)
-
-    Version, release, when compared to their older Epoch (({true})) is returned.
-
---- RPM:: Version # v
---- RPM:: Version # r
---- RPM:: Version # e
-
-    Version, release, return the value of the Epoch.
-
---- RPM:: Version # to_s
-
-    (({"Ver-rel"})) return a string of the form.
-
---- RPM:: Version # to_vre
-
-    (({"Epoch: ver-rel"})) return a string of the form.
-
-
 == RPM:: Source
 
 === Superclass
