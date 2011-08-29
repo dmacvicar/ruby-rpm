@@ -89,6 +89,12 @@ package_new_from_header(VALUE klass, Header hdr)
 	return p;
 }
 
+/*
+ * Creates a new package object
+ * @param [String] name Package name
+ * @param [Version] version Package version
+ * @return [Package]
+ */
 static VALUE
 package_s_create(VALUE klass, VALUE name, VALUE version)
 {
@@ -129,6 +135,15 @@ static rpmRC read_header_from_file(FD_t fd, const char *filename, Header *hdr)
     return rc;
 }
 
+/*
+ * Creates a +Package+ object from a rpm located on disk
+ * @param [String] filename Path to filename
+ * @return [Package]
+ * @example
+ *   pkg = RPM::Package.open('/home/foo/myprogram-1.0-x86_64.rpm')
+ *   pkg.name => 'myprogram'
+ *   pkg.version => '1.0'
+ */
 static VALUE
 package_s_open(VALUE klass, VALUE filename)
 {
@@ -186,6 +201,11 @@ package_s_open(VALUE klass, VALUE filename)
 	return pkg;
 }
 
+/*
+ * Create a new package object from data
+ * @param [String] str Header data
+ * @return [Package]
+ */
 static VALUE
 package_s_load(VALUE klass, VALUE str)
 {
@@ -244,6 +264,10 @@ rpm_package_new_from_N_EVR(VALUE name, VALUE version)
 }
 #endif
 
+/*
+ * Add a dependency to the package header
+ * @param [Dependency] dep Dependency to add
+ */
 VALUE
 rpm_package_add_dependency(VALUE pkg,VALUE dep)
 {
@@ -272,6 +296,11 @@ rpm_package_add_dependency(VALUE pkg,VALUE dep)
   return Qnil;
 }
 
+/*
+ * Add a int32 value to the package header
+ * @param [Number] tag Tag
+ * @param [Number] val Value
+ */
 VALUE
 rpm_package_add_int32(VALUE pkg,VALUE tag,VALUE val)
 {
@@ -290,6 +319,11 @@ rpm_package_add_int32(VALUE pkg,VALUE tag,VALUE val)
   return Qnil;
 }
 
+/*
+ * Add a list of strings to the package header
+ * @param [Number] tag Tag
+ * @param [Array<String>] val Strings to add
+ */
 VALUE
 rpm_package_add_string_array(VALUE pkg,VALUE tag,VALUE val)
 {
@@ -300,6 +334,11 @@ rpm_package_add_string_array(VALUE pkg,VALUE tag,VALUE val)
   return Qnil;
 }
 
+/*
+ * Add a binary value to the package header
+ * @param [Number] tag Tag
+ * @param [String] val String to add
+ */
 VALUE
 rpm_package_add_string(VALUE pkg,VALUE tag,VALUE val)
 {
@@ -310,6 +349,11 @@ rpm_package_add_string(VALUE pkg,VALUE tag,VALUE val)
   return Qnil;
 }
 
+/*
+ * Add a binary value to the package header
+ * @param [Number] tag Tag
+ * @param [String] val Value
+ */
 VALUE
 rpm_package_add_binary(VALUE pkg,VALUE tag,VALUE val)
 {
@@ -320,6 +364,10 @@ rpm_package_add_binary(VALUE pkg,VALUE tag,VALUE val)
   return Qnil;
 }
 
+/*
+ * Deletes a tag of the package header
+ * @param [Number] tag Tag
+ */
 VALUE
 rpm_package_delete_tag(VALUE pkg, VALUE tag)
 {
@@ -331,10 +379,18 @@ rpm_package_delete_tag(VALUE pkg, VALUE tag)
 	return val;
 }
 
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
+/*
+ * Access a header entry
+ * @param [Number] tag Tag to return
+ * @return [] Value of the entry
+ * @example
+ *   pkg => #<RPM::Package name="xmlgraphics-fop", version=#<RPM::Version v="1.0", r="22.4">>
+ *   pkg[RPM::TAG_NAME] => "xmlgraphics-fop"
+ */
 VALUE
 rpm_package_aref(VALUE pkg, VALUE tag)
 {
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 	rpmTag tagval = NUM2INT(tag);
 	VALUE val = Qnil;
 	void* data;
@@ -472,9 +528,6 @@ rpm_package_aref(VALUE pkg, VALUE tag)
 	return val;
 }
 #else
-VALUE
-rpm_package_aref(VALUE pkg, VALUE tag)
-{
 	rpmTag tagval = NUM2INT(tag);
 	VALUE val = Qnil;
     rpmtd tagc = rpmtdNew();
@@ -622,6 +675,9 @@ rpm_package_sprintf(VALUE pkg, VALUE fmt)
 	return rb_str_new2(str);
 }
 
+/*
+ * @return [String] This package name
+ */
 VALUE
 rpm_package_get_name(VALUE pkg)
 {
@@ -633,6 +689,9 @@ rpm_package_get_name(VALUE pkg)
 	return name;
 }
 
+/*
+ * @return [String] This package architecture
+ */
 VALUE
 rpm_package_get_arch(VALUE pkg)
 {
@@ -644,6 +703,9 @@ rpm_package_get_arch(VALUE pkg)
 	return arch;
 }
 
+/*
+ * @return [Number] This package signature
+ */
 VALUE
 rpm_package_get_signature(VALUE pkg)
 {
@@ -662,6 +724,9 @@ rpm_package_get_signature(VALUE pkg)
 	return signature;
 }
 
+/*
+ * @return [Version] Version for this package
+ */
 VALUE
 rpm_package_get_version(VALUE pkg)
 {
@@ -689,6 +754,9 @@ rpm_package_get_version(VALUE pkg)
 	return ver;
 }
 
+/*
+ * @return [Array<RPM::File>] File list for this package
+ */
 VALUE
 rpm_package_get_files(VALUE pkg)
 {
@@ -812,7 +880,7 @@ rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALU
     while ( rpmtdNext(nametd) != -1 ) {
         rb_ary_push(deps,dependency_new(rpmtdGetString(nametd),rpm_version_new(rpmtdNextString(versiontd)),*rpmtdNextUint32(flagtd),pkg));
     }
-    
+
  leave:
     rpmtdFree(nametd);
     rpmtdFree(versiontd);
@@ -821,34 +889,49 @@ rpm_package_get_dependency(VALUE pkg,int nametag,int versiontag,int flagtag,VALU
 }
 #endif
 
+/*
+ * @return [Array<RPM::Provide>] Provides list for this package
+ */
 VALUE
 rpm_package_get_provides(VALUE pkg)
 {
 	return rpm_package_get_dependency(pkg,RPMTAG_PROVIDENAME,RPMTAG_PROVIDEVERSION,RPMTAG_PROVIDEFLAGS,rpm_provide_new);
 }
 
+/*
+ * @return [Array<RPM::Require>] Require list for this package
+ */
 VALUE
 rpm_package_get_requires(VALUE pkg)
 {
 	return rpm_package_get_dependency(pkg,RPMTAG_REQUIRENAME,RPMTAG_REQUIREVERSION,RPMTAG_REQUIREFLAGS,rpm_require_new);
 }
 
+/*
+ * @return [Array<RPM::Conflict>] Conflict list for this package
+ */
 VALUE
 rpm_package_get_conflicts(VALUE pkg)
 {
 	return rpm_package_get_dependency(pkg,RPMTAG_CONFLICTNAME,RPMTAG_CONFLICTVERSION,RPMTAG_CONFLICTFLAGS,rpm_conflict_new);
 }
 
+/*
+ * @return [Array<RPM::Obsolete>] Obsoletes list for this package
+ */
 VALUE
 rpm_package_get_obsoletes(VALUE pkg)
 {
 	return rpm_package_get_dependency(pkg,RPMTAG_OBSOLETENAME,RPMTAG_OBSOLETEVERSION,RPMTAG_OBSOLETEFLAGS,rpm_obsolete_new);
 }
 
-#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
+/*
+ * @return [Array<RPM::Changelog>] changelog of the package as an array of entries
+ */
 VALUE
 rpm_package_get_changelog(VALUE pkg)
 {
+#if RPM_VERSION_CODE < RPM_VERSION(4,6,0) || RPM_VERSION_CODE >= RPM_VERSION(5,0,0)
 	VALUE cl;
 	register int i;
 
@@ -885,9 +968,6 @@ rpm_package_get_changelog(VALUE pkg)
 	return cl;
 }
 #else
-VALUE
-rpm_package_get_changelog(VALUE pkg)
-{
 	VALUE cl;
 	rpmtd timetd = rpmtdNew();
 	rpmtd nametd = rpmtdNew();
@@ -955,6 +1035,10 @@ rpm_package__dump(VALUE pkg, VALUE limit)
 	return rpm_package_dump(pkg);
 }
 
+/*
+ * String representation of the package: "name-version-release-arch"
+ * @return [String]
+ */
 VALUE
 rpm_package_to_s(VALUE pkg)
 {

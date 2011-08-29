@@ -320,60 +320,6 @@ Table of Contents ==
 
     achieve the level of messages output by the rpm, or set.
 
-== RPM:: Package
-
-=== Superclass
-
-  * Data
-
-Specific methods ===
-
---- RPM:: Package.open (filename)
---- RPM:: Package.new (filename)
-
-    File ((| filename |)) to create a package object from.
-
-=== Method
-
---- RPM:: Package # [] (tag)
-
-    Returns the value of the package to be associative tag.
-
---- RPM:: Package # name
-
-    Returns the package name.
-
---- RPM:: Package # version
-
-    Version of the package (((<Version|RPM::Version>))) is returned.
-
---- RPM:: Package # files
-
-    Included in the package file (((<File|RPM::File>))) returns an array.
-
---- RPM:: Package # provides
-
-    Provides a package that returns an array.
-
---- RPM:: Package # requires
-
-    Requires return an array of packages.
-
---- RPM:: Package # conflicts
-
-    Returns an array of Conflicts of the package.
-
---- RPM:: Package # changelog
-
-    Returns an array of the package changelog. Update history ,(({: time})),
-    (({: Name })),(({: text})) is a hash with three keys.
-
---- RPM:: Package # to_s
-
-    (({"Name-version-release"})) returns a string.
-
-== RPM:: ChangeLog
-
 === Superclass
 
   * Struct
