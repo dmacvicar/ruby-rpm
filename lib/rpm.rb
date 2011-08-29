@@ -12,6 +12,27 @@ require 'rpm/version'
 
 module RPM
 
+  # @attr [Number] type Type of event
+  # @attr [Number] key Key transactions
+  # @attr [Package] package Package being processed
+  # @attr [Number] amount Progress
+  # @attr [Number] total Total size
+  class CallbackData
+  end
+
+  # @attr [Number] type Type of event
+  # @attr [Number] key Key in the transaction
+  # @attr [Package] package Package being processed
+  # @attr [Description] Description of the problem
+  class Problem
+  end
+
+  # @attr [Time] time Timestamp of the changelog entry
+  # @attr [String] name Name of the changelog entry
+  # @attr [Text] text description of the changelog entry
+  class Changelog
+  end
+
   def vercmp(ver1, ver2)
     unless String === ver1 and String === ver2 then
       raise TypeError, 'illegal argument type'

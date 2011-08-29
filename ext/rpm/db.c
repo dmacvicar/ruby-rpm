@@ -1299,14 +1299,7 @@ Init_rpm_transaction(void)
 	rb_undef_method(rpm_cTransaction, "dup");
 	rb_undef_method(rpm_cTransaction, "clone");
 
-    /*
-     * @attr [Number] type Type of event
-     * @attr [Number] key Key transactions
-     * @attr [Package] package Package being processed
-     * @attr [Number] amount Progress
-     * @attr [Number] total Total size
-     */
-	rpm_sCallbackData = rb_struct_define(NULL, "type", "key", "package",
+    rpm_sCallbackData = rb_struct_define(NULL, "type", "key", "package",
 										 "amount", "total", NULL);
 
 	rb_define_const(rpm_mRPM, "CallbackData", rpm_sCallbackData);

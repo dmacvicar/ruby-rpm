@@ -16,6 +16,10 @@ m_expand(VALUE m, VALUE name)
 	return rb_str_new2(rpmExpand(StringValueCStr(name), NULL));
 }
 
+/*
+ * @param [String] name Name of the macro
+ * @return [String] value of macro +name+
+ */
 static VALUE
 m_aref(VALUE m, VALUE name)
 {
@@ -46,6 +50,11 @@ rpm_macro_aref(VALUE name)
 	return m_aref(Qnil, name);
 }
 
+/*
+ * Setup a macro
+ * @param [String] name Name of the macro
+ * @param [String] value Value of the macro or +nil+ to delete it
+ */
 static VALUE
 m_aset(VALUE m, VALUE name, VALUE val)
 {
@@ -67,6 +76,9 @@ rpm_macro_aset(VALUE name, VALUE val)
 	return m_aset(Qnil, name, val);
 }
 
+/*
+ * Read configuration files
+ */
 static VALUE
 m_readrc(int argc, VALUE* argv, VALUE m)
 {
@@ -134,6 +146,9 @@ rpm_init_marcros(const char* path)
 
 static int rpm_verbosity;
 
+/*
+ * @return [Number] Verbosity level
+ */
 static VALUE
 m_get_verbosity(VALUE m)
 {
@@ -146,6 +161,10 @@ rpm_get_verbosity(void)
 	return INT2NUM(rpm_verbosity);
 }
 
+/*
+ * Sets the verbosity level
+ * @param [Number] verbosity Verbosity level
+ */
 static VALUE
 m_set_verbosity(VALUE m, VALUE verbosity)
 {
@@ -188,11 +207,11 @@ Init_rpm(void)
 {
 	char *temp;
     VALUE rbtmpdir;
-    
+
     rb_require("tmpdir");
 
     rbtmpdir = rb_funcall(rb_const_get(rb_cObject,
-                                       rb_intern("Dir")), 
+                                       rb_intern("Dir")),
                           rb_intern("tmpdir"), 0);
 	rpm_mRPM = rb_define_module("RPM");
 
