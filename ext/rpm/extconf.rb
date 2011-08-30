@@ -43,6 +43,10 @@ def check_db
 end
 
 def check_rpm
+  if rpm_version < rpm_version([4,1,0])
+    STDERR.puts "ruby-rpm requires rpm 4.1 or newer"
+    return false
+  end
   # Set things up manually
   dir_config("rpm")
   $libs = append_library($libs, 'rpmdb') if rpm_version < rpm_version([4,6,0])
