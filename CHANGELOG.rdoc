@@ -1,9 +1,15 @@
 2011-08-20  Duncan Mac-Vicar P. <dmacvicar@suse.de>
 
-  * Anders F Bjorklund (2):
+  * Release 1.3.1     
+  * Move the japanese guide to in-source documentation that can
+    be generated
+  * Use bundler tasks
+  * Specify version for gem dependencies  
+  * patches from Anders F Bjorklund (2):
     - stpcpy declaration clashing with darwin's <string.h>
-      use rbconfig to get DLEXT instead of hardcoding .so
-  * Lubomir Rintel (1):
+    - use rbconfig to get DLEXT instead of hardcoding .so
+    - patches for rpm 4.4.6, 4.4.8 and 5
+  * patches from Lubomir Rintel (1):
     - Add a missing header that caused compile to fail
 
 2010-08-19  Duncan Mac-Vicar P. <dmacvicar@suse.de>
