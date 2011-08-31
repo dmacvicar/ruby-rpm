@@ -1,7 +1,6 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), 'helper')
 require 'fileutils'
 require 'tmpdir'
-require 'rpm'
 
 def rpm_version(ver=[])
   ver = `LANG=C rpm --version| cut -d' ' -f 3`.split(/\./) if ver.empty?
@@ -9,50 +8,54 @@ def rpm_version(ver=[])
 end
 
 class RPM_DB_Tests < Test::Unit::TestCase
+
+  def with_tmp_db
+    Dir.mktmpdir do |root_dir|
+      RPM::DB.init(root_dir)
+      yield root_dir
+    end
+  end
+
   def setup
     @version = rpm_version
-    @work_dir = "#{Dir.tmpdir}/.ruby-rpm-test"
-    unless File.directory?(@work_dir) then
-      Dir.mkdir(@work_dir, 0777)
-    end
-    ## create database directory
-    FileUtils.mkdir_p( "#{@work_dir}#{RPM['_dbpath']}" )
-    RPM::DB.init( @work_dir )
-    @a = RPM::DB.open( true, @work_dir )
-  end # def setup
+  end
 
   def teardown
-    @a.close
-    FileUtils.rm_rf(@work_dir)
-  end # def teardown
+  end
 
   def test_init
-    assert( File.exist?( "#{@tmppath}/#{RPM['_dbpath']}/Packages" ) )
-  end # def test_initdb
+    with_tmp_db do |root_dir|
+      assert File.exist?(File.join(root_dir, RPM['_dbpath'], 'Packages'))
+    end
+  end
 
   def test_rebuild
     # We add the "/" to work around an obscure bug in older
     # RPM versions
-    RPM::DB.rebuild( @work_dir + "/")
-    assert( File.exist?( "#{@tmppath}/#{RPM['_dbpath']}/Packages" ) )
+    with_tmp_db do |root_dir|
+      RPM::DB.rebuild(root_dir + "/")
+      assert File.exist?(File.join(root_dir, RPM['_dbpath'], 'Packages'))
+    end
   end
 
   def test_open
-    assert( @a )
-  end
 
-  def test_root    
-    assert_equal( @a.root, @work_dir ) if @version < rpm_version([4,6,0])
-    if @version >= rpm_version([4,6,0])
-      assert_raise(NoMethodError) { @a.root }      
+    with_tmp_db do |root_dir|
+      db = RPM::DB.open(true, root_dir)
+      assert db
+
+      assert_equal(db.root, root_dir) if @version < rpm_version([4,6,0])
+      if @version >= rpm_version([4,6,0])
+        assert_raise(NoMethodError) { db.root }
+      end
+
+      assert_equal( db.home, RPM['_dbpath'] ) if @version < rpm_version([4,6,0])
+      if @version >= rpm_version([4,6,0])
+        assert_raise(NoMethodError) { db.home }
+      end
+
+      db.close
     end
   end
 
-  def test_home
-    assert_equal( @a.home, RPM['_dbpath'] ) if @version < rpm_version([4,6,0])
-    if @version >= rpm_version([4,6,0])
-      assert_raise(NoMethodError) { @a.home }
-    end
-  end
-
-end # class RPM_DB_Tests < Test::Unit::TestCase
+end
