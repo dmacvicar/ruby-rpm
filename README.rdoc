@@ -14,7 +14,7 @@ Ruby/RPM is an interface to access RPM database for Ruby.
 
 == Installation
 
-* gem install rpm
+* gem install ruby-rpm
 
 == Building
 
@@ -22,7 +22,7 @@ If you want to automatically install required gems, make sure to
 have bundler 1.x installed
 
 * gem instal bundler
-* gem build rpm.gemspec
+* gem build ruby-rpm.gemspec
 
 == Usage
 

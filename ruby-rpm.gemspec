@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
     s.email = "ruby-rpm-devel@rubyforge.org"
     s.homepage = "http://gitorious.org/ruby-rpm"
     s.summary = "Ruby bindings for RPM =Linux package manager)"
+    s.rubyforge_project = "ruby-rpm"
     s.required_ruby_version = '>= 1.8.1'
     s.authors = ["Kenta MURATA", "David Lutterkort", "Duncan Mac-Vicar P."]
     s.extensions = "ext/rpm/extconf.rb"

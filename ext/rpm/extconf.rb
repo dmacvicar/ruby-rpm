@@ -94,7 +94,7 @@ check_debug
 HEADERS = [ "rpmlog", "rpmps", "rpmts", "rpmds" ]
 HEADERS.each { |hdr| have_header("rpm/#{hdr}.h") }
 
-$CFLAGS="#{$CFLAGS} -Werror -Wno-deprecated-declarations"
+$CFLAGS="#{$CFLAGS} -Wno-deprecated-declarations"
 
 system 'gcc -MM *.c >depend 2>/dev/null'
 
