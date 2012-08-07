@@ -96,6 +96,10 @@ HEADERS.each { |hdr| have_header("rpm/#{hdr}.h") }
 
 $CFLAGS="#{$CFLAGS} -Wno-deprecated-declarations"
 
+if RUBY_VERSION =~ /1.9/
+  $CFLAGS += " -DRUBY_19"
+end
+
 system 'gcc -MM *.c >depend 2>/dev/null'
 
 create_header
