@@ -7,7 +7,12 @@
 /* $Id: package.c 45 2004-06-04 15:11:20Z kazuhiko $ */
 
 #include "private.h"
+
+#ifdef RUBY_19
+#include <ruby/st.h>
+#else
 #include <st.h>
+#endif
 
 #ifndef stpcpy
 char *stpcpy( char *dest, const char *source );
