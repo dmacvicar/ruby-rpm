@@ -1,7 +1,7 @@
 
 >This project has been obsoleted by [ruby-rpm-ffi](https://github.com/dmacvicar/ruby-rpm-ffi). This version is not longer maintained and I keep this repo for archiving purposes. 
 
-[maintained](https://img.shields.io/maintenance/yes/2012.svg)
+![maintained](https://img.shields.io/maintenance/yes/2012.svg)
 
 # RPM bindings for ruby
 
