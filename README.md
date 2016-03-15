@@ -1,22 +1,29 @@
-= RPM bindings for ruby
+
+>This project has been obsoleted by [ruby-rpm-ffi](https://github.com/dmacvicar/ruby-rpm-ffi). This version is not longer maintained and I keep this repo for archiving purposes. 
+
+[maintained](https://img.shields.io/maintenance/yes/2012.svg)
+
+# RPM bindings for ruby
 
 * http://www.gitorious.org/ruby-rpm
 
-== Introduction
+# Introduction
 
 Ruby/RPM is an interface to access RPM database for Ruby.
   
-== Requirements
+## Requirements
 
 * ruby 1.8+
 * gcc
 * rpm 4.0.0 or newer (tested on 4.0.4 and 4.2.1)
 
-== Installation
+## Installation
 
-* gem install ruby-rpm
+```console
+gem install ruby-rpm
+```
 
-== Building
+## Building
 
 If you want to automatically install required gems, make sure to
 have bundler 1.x installed
@@ -24,9 +31,11 @@ have bundler 1.x installed
 * gem instal bundler
 * gem build ruby-rpm.gemspec
 
-== Usage
+## Usage
 
+```ruby
 require 'rpm'
+```  
   
 == License
 
